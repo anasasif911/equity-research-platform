@@ -25,6 +25,7 @@ from .sources.evidence import EvidenceStore, SourceUnavailable
 from .util import log, parse_date, read_json, setup_logging, utcnow, write_json
 from .valuation import engine as V
 from .valuation.wacc import cost_of_capital, regression_beta
+from .markets import psx_stages
 
 
 class Pipeline:
@@ -48,6 +49,8 @@ class Pipeline:
                 (r"adamodar", fxd / "erp.json"),
             ]
         self.provider = make_provider(cfg, state.work, state)
+        opt_m = (state.data["options"].get("market") or "").lower()
+        self.market = "psx" if (opt_m == "psx" or state.data["ticker_input"].upper().startswith("PSX:")) else (opt_m or "auto")
 
     @property
     def cutoff(self) -> dt.datetime:
@@ -99,11 +102,19 @@ class Pipeline:
     # ------------------------------------------------------------------ stages
     def s_resolve(self):
         opts = self.state.data["options"]
+        if self.market == "psx":
+            return psx_stages.resolve(self)
         res = sec.resolve(self.store, self.state.data["ticker_input"]) if not opts.get("cik") else \
             {"status": "resolved", "cik": int(opts["cik"]), "ticker": self.state.data["ticker_input"].upper(),
              "name": None, "exchange": None, "evidence_id": None}
         if res["status"] == "ambiguous":
             raise Paused(NEEDS_INPUT, res["question"], res["candidates"])
+        if res["status"] == "not_found" and self.market == "auto":
+            self.market = "psx"
+            self.state.data["options"]["market"] = "psx"
+            self.state.save()
+            self.state.event("resolve", "not an SEC registrant: trying the Pakistan Stock Exchange")
+            return psx_stages.resolve(self)
         if res["status"] == "not_found":
             raise Paused(NEEDS_INPUT,
                          f"'{self.state.data['ticker_input']}' is not an SEC-registered ticker. This version automates "
@@ -121,12 +132,21 @@ class Pipeline:
                     "ticker": res.get("ticker") or (subs.get("tickers") or [None])[0]}
         if sec_info["exchange"] is None and subs.get("exchanges"):
             sec_info["exchange"] = subs["exchanges"][0]
+        sec_info.update(market="us_sec", identifier=f"SEC CIK {sec_info['cik']}",
+                        classification=f"SIC {sec_info.get('sic')} {sec_info.get('sic_description') or ''}".strip(),
+                        resolution_source="SEC ticker map", currency="USD",
+                        fin_source="SEC XBRL company facts (10-K/10-Q)",
+                        fin_source_long="SEC XBRL company facts; latest-filed value per period (restatements logged); 52/53-week years accepted",
+                        coc_method="CAPM with sourced risk-free rate and ERP, regression beta (Blume-adjusted); market-value weights",
+                        peer_source="SEC XBRL (TTM) and timestamped aggregator prices")
         self.state.put("security", sec_info)
         self.state.put("submissions_meta", {"recent": sec.recent_filings(subs)[:200]})
 
     def s_plan(self):
         sec_info = self.state.get("security")
-        pb = self.M.playbook_for_sic(sec_info.get("sic"), self.state.data["options"].get("sector"))
+        override = self.state.data["options"].get("sector") or \
+            (psx_stages.playbook_id(sec_info) if sec_info.get("market") == "psx" else None)
+        pb = self.M.playbook_for_sic(sec_info.get("sic"), override)
         rp = self.M.research_plan
         items = []
         for cat, lst in rp["coverage"].items():
@@ -140,6 +160,8 @@ class Pipeline:
                                 "methodology": self.M.version_fingerprint(), "created_at": utcnow().isoformat()})
 
     def s_retrieve(self):
+        if self.state.get("security").get("market") == "psx":
+            return psx_stages.retrieve(self)
         sec_info = self.state.get("security")
         cik = sec_info["cik"]
         out: dict = {"blocked": []}
@@ -189,11 +211,14 @@ class Pipeline:
             if b:
                 mi["beta"] = {"value": b["raw"], "adjusted": b["adjusted"], "r2": b["r2"], "se": b["se"], "n": b["n"],
                               "window": f"{b['start']} to {b['end']}", "method": b["method"],
-                              "evidence_ids": [stock_m[1], bench_m[1]]}
+                              "evidence_ids": [stock_m[1], bench_m[1]], "label": "Beta (raw / Blume-adjusted)",
+                              "description": (f"{b['n']}m monthly regression vs S&P 500 ETF, {b['start']} to {b['end']}, R2 {b['r2']:.2f}, "
+                                              f"s.e. {b['se']:.2f} [{stock_m[1]}, {bench_m[1]}]")}
         rf = rates.risk_free_usd(self.store, cutoff)
         if rf:
             mi["rf"] = {"value": rf["value"], "as_of": rf["as_of"], "evidence_id": rf["evidence_id"], "tenor": rf["tenor"],
-                        "short_rate": rf["curve"].get("1 Yr")}
+                        "short_rate": rf["curve"].get("1 Yr"), "label": "Risk-free rate (10y UST)",
+                        "source_text": f"US Treasury par curve {rf['as_of']} [{rf['evidence_id']}]"}
         erp = rates.equity_risk_premium(self.store)
         if erp:
             mi["erp"] = {"value": erp["value"], "as_of": erp.get("as_of"), "evidence_id": erp["evidence_id"],
@@ -257,6 +282,8 @@ class Pipeline:
         return out
 
     def s_extract(self):
+        if self.state.get("security").get("market") == "psx":
+            return psx_stages.extract(self)
         facts = read_json(self.state.work / "companyfacts.json")
         rules = self.M.normalization
         ann = xbrl.build_annual(facts, rules)
@@ -290,7 +317,9 @@ class Pipeline:
         ex = self.state.get("extracted")
         st = F.build_statements(ex["annual"], ex["interim"])
         facts = read_json(self.state.work / "companyfacts.json")
-        bridge = F.normalization_bridge(facts, st, self.M.normalization)
+        bridge = F.normalization_bridge(facts, st, self.M.normalization) if facts else [
+            {"period": p["label"], "reported_ebit": r.get("operating_income"), "adjustments": [],
+             "normalized_ebit": r.get("operating_income")} for p, r in zip(st["periods"], st["rows"])]
         self.state.put("statements", st)
         self.state.put("normalization_bridge", bridge)
 
@@ -303,7 +332,8 @@ class Pipeline:
                                          "diff": r["restated"] - r["original"],
                                          "resolution": f"Latest-filed value used ({r['restated_accn']}); original {r['original']:,.0f} "
                                                        f"in {r['original_accn']} retained in log."})
-        mi = self.state.get("market_raw") or {}
+        rec["discrepancies"] += ex.get("source_discrepancies", [])
+        rec["checks"] += ex.get("vendor_checks", [])
         self.state.put("reconciliation", rec)
 
     def s_drivers(self):
@@ -314,8 +344,23 @@ class Pipeline:
         st, drv = self.state.get("statements"), self.state.get("drivers")
         plan, mi, sec_info = self.state.get("plan"), self.state.get("market_raw"), self.state.get("security")
         country = sec_info.get("country") if sec_info.get("country") in ("US", "PK", "IN", "GB") else "DEFAULT"
+        kw = {}
+        if sec_info.get("market") == "psx":
+            prof = psx_stages.profile()
+            tax = self.state.get("tax_disclosure") or {}
+            kw = {"terminal_cap": prof["terminal_growth_cap"], "kd_floor": mi["rf"].get("gov_yield"),
+                  "statutory": tax.get("statutory"),
+                  "statutory_source": (f"annual report p.{tax.get('page')}: '{tax.get('text')}' [{tax.get('evidence_id')}]" if tax else None)}
         base = A.build_base(drv, self.M.forecasting, horizon=plan["horizon"], country=country,
-                            rf=mi["rf"]["value"], short_rate=mi["rf"].get("short_rate"), last_row=st["rows"][-1])
+                            rf=mi["rf"]["value"], short_rate=mi["rf"].get("short_rate"), last_row=st["rows"][-1],
+                            max_run_rate=plan["playbook"].get("max_run_rate_growth"), **kw)
+        ov_path = self.state.data["options"].get("assumptions_file")
+        ov = {}
+        if ov_path:
+            import yaml as _y
+            ov = _y.safe_load(open(ov_path))
+        ov = {**ov, **(read_json(self.state.work / "assumption_overrides.json", {}) or {})}
+        base["overrides_applied"] = A.apply_overrides(base, ov, self.M.forecasting) if ov else []
         scen = A.scenario_set(base, self.M.forecasting, plan["playbook"])
         self.state.put("assumptions", base)
         self.state.put("scenarios", scen)
@@ -326,6 +371,10 @@ class Pipeline:
         base, scen = self.state.get("assumptions"), self.state.get("scenarios")
         mi, ex = self.state.get("market_raw"), self.state.get("extracted")
         plan = self.state.get("plan")
+        if self.state.get("security").get("market") == "psx":
+            market_kw, coc = psx_stages.model_market(self, st, drv, base)
+            return V.ModelContext(st=st, drv=drv, scenarios=scen, base_assump=base, market=market_kw, coc=coc,
+                                  horizon=plan["horizon"])
         bs = st["latest_bs"] or st["rows"][-1]
         bs_date = parse_date(st["interim_end"]) if st.get("latest_bs") else parse_date(st["periods"][-1]["end"])
         so = ex["shares_outstanding"]
@@ -379,7 +428,8 @@ class Pipeline:
         peers = self.state.get("retrieved").get("peers") or []
         avail = {"historical_financials": True, "market_price": True, "risk_free_rate": True, "equity_risk_premium": True,
                  "beta": True, "dividend_history": all(p for p in payouts) and len(payouts) >= 5,
-                 "payout_ok": payout is not None and 0.3 <= payout <= 1.0,
+                 "payout_ok": payout is not None and 0.3 <= payout <= 1.0, "payout_known": payout is not None,
+                 "payout_text": f"{payout:.0%} (3y average)" if payout is not None else "",
                  "peer_set_with_market_data": len(peers) >= 3, "book_value": rows[-1].get("total_equity") is not None,
                  "roe_history": True, "segment_profit_disclosure": False}
         methods = V.select_methods(self.M.valuation, plan["playbook"]["archetype"], avail, plan["playbook"])
@@ -433,7 +483,7 @@ class Pipeline:
                 "assumptions": self.state.get("assumptions"), "valuation": self.state.get("valuation"),
                 "playbook": self.state.get("plan")["playbook"], "plan": self.state.get("plan")["items"],
                 "excerpts": self.state.get("excerpts") or [],
-                "market_inputs": {"price": mi["price"], "rf": mi["rf"], "erp": mi["erp"], "beta": mi.get("beta")},
+                "market_inputs": {"price": mi["price"], "rf": mi["rf"], "erp": mi["erp"], "beta": mi.get("beta"), "crp": mi.get("crp")},
                 "evidence_ids": {"financials": self.state.get("retrieved")["companyfacts_evidence_id"]}}
 
     def s_synthesis(self):

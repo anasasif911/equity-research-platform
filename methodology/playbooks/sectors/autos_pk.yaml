@@ -1,0 +1,26 @@
+id: autos_pk
+archetype: cyclical
+description: "Pakistan automobile assemblers (CKD assembly of cars/SUVs, light commercial, two/three-wheelers). Imported kits priced in USD/JPY/CNY, sold in PKR; demand driven by policy rates, auto financing, prices and tariffs."
+damodaran_industry: "Auto & Truck"
+max_run_rate_growth: 0.25       # nominal PKR starting run-rate cap for mechanically generated growth (cyclical; analyst may override with evidence)
+kpis: [units_sold_by_segment, average_selling_price, gross_margin, localisation_level, customer_advances, inventory_days, capex_pct_revenue, net_cash]
+key_questions:
+  - "Volume outlook by segment (four-wheelers vs three-wheelers): what drove the latest units trend and is it cyclical or structural?"
+  - "Pricing power vs PKR depreciation and taxes: can price increases pass through kit costs and sales-tax changes without losing volume?"
+  - "Policy: Auto Policy 2026-31, CBU import duty cuts, NEV/hybrid incentives and sales-tax treatment"
+  - "Competitive intensity from new Chinese/Korean entrants and CBU imports"
+  - "Capacity expansion: return on the new investment and funding"
+  - "Customer advances and inventory: working-capital swing risk if bookings slow"
+exposures:
+  - {factor: "Tariff and auto-policy changes (CBU duty cuts, Auto Policy 2026-31)", category: regulatory, transmission: "lower CBU duties / less tariff protection -> imported vehicles cheaper relative to local CKD -> lower local volumes and pricing -> revenue and gross margin -> FCFF and terminal value", model_variables: [revenue_growth, operating_margin], monitoring: ["Auto Policy notification", "customs duty schedule", "monthly PAMA sales"]}
+  - {factor: "Sales-tax rate on hybrid/NEV vehicles", category: fiscal, transmission: "higher sales tax absorbed by company -> lower net price -> gross margin", model_variables: [operating_margin], monitoring: ["Finance Act / FBR notifications", "quarterly gross margin"]}
+  - {factor: "PKR depreciation vs USD/CNY", category: macro, transmission: "weaker PKR -> higher CKD kit cost in PKR -> gross margin until price increases pass through -> EBIT", model_variables: [operating_margin], monitoring: ["SBP interbank PKR/USD", "company price-increase notices"]}
+  - {factor: "Policy rate and auto-financing conditions", category: macro, transmission: "higher policy rate / tighter auto-finance rules -> lower financed purchases -> volumes; also higher discount rate", model_variables: [revenue_growth, wacc], monitoring: ["SBP MPC decisions", "auto-finance stock"]}
+  - {factor: "Competitive entry (Chinese/Korean OEMs, BEVs)", category: competitive, transmission: "new models and price competition -> market share and price discounts -> volume and margin", model_variables: [revenue_growth, operating_margin], monitoring: ["PAMA market shares", "launch announcements"]}
+  - {factor: "Import restrictions / LC margins", category: macro, transmission: "LC restrictions -> kit shortages -> production stoppages -> volumes and fixed-cost absorption", model_variables: [revenue_growth, operating_margin], monitoring: ["SBP import regulations", "plant shutdown notices"]}
+  - {factor: "Customer advances and inventory build", category: financial, transmission: "slower bookings -> lower advances, higher inventory -> working-capital outflow -> FCFF", model_variables: [nwc_pct], monitoring: ["trade and other payables (advances)", "stock-in-trade"]}
+scenario_overrides:
+  bear: {revenue_growth_delta: -0.08, margin_delta: -0.04}
+  bull: {revenue_growth_delta: 0.05, margin_delta: 0.02}
+  stress: {revenue_growth_delta: -0.25, revenue_shock_years: 2, margin_delta: -0.08, wacc_delta: 0.02, terminal_g_delta: -0.01}
+peers_hint: [INDU, HCAR, PSMC, GHNI, HINO]

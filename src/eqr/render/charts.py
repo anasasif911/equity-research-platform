@@ -56,16 +56,17 @@ def football_field(path: Path, bars: list[tuple[str, float, float]], price: floa
     plt = mpl_setup()
     fig, ax = plt.subplots(figsize=(6.6, 0.45 * len(bars) + 0.9))
     for i, (lab, lo, hi) in enumerate(bars):
-        ax.barh(i, hi - lo, left=lo, color=c("ink") if i else c("gold"), height=0.5)
+        w = max(hi - lo, (max(b[2] for b in bars) or 1) * 0.006)   # keep single-point ranges visible
+        ax.barh(i, w, left=lo, color=c("ink") if i else c("gold"), height=0.5)
         ax.text(hi, i, f"  {lo:,.0f}-{hi:,.0f}", va="center", fontsize=7, color=c("grey_900"))
     ax.set_yticks(range(len(bars)), [b[0] for b in bars], fontsize=7)
-    ax.invert_yaxis()
+    ax.set_ylim(len(bars) - 0.4, -1.1)
     if price:
         ax.axvline(price, color=c("negative"), lw=1.0, ls="--")
-        ax.text(price, -0.75, f"Price {price:,.2f}", color=c("negative"), fontsize=7, ha="center")
+        ax.text(price, -0.8, f" Price {price:,.0f}", color=c("negative"), fontsize=7, ha="left", va="center")
     if fair:
         ax.axvline(fair, color=c("gold"), lw=1.2)
-        ax.text(fair, len(bars) - 0.35, f"Fair value {fair:,.2f}", color=c("gold_dark"), fontsize=7, ha="center")
+        ax.text(fair, -0.8, f" Fair value {fair:,.0f}", color=c("gold_dark"), fontsize=7, ha="left", va="center")
     ax.set_xlabel(f"Value per share ({currency})")
     ax.grid(axis="y", visible=False)
     ax.set_title("Valuation ranges by method / scenario", loc="left")

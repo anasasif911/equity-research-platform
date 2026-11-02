@@ -81,10 +81,11 @@ def assemble(pl) -> dict:
     a_rows.append({"label": "Terminal growth", "first": "", "last": fmt_pct(base["terminal_growth"]), "rationale": base["terminal_rationale"]})
     d = val["dcf_base"]
     beta = mi["beta"]
-    wacc_rows = [["Risk-free rate (10y UST)", fmt_pct(mi["rf"]["value"], 2), f"US Treasury par curve {mi['rf']['as_of']} [{mi['rf']['evidence_id']}]"],
-                 ["Equity risk premium", fmt_pct(mi["erp"]["value"], 2), f"Damodaran implied ERP {mi['erp'].get('as_of') or ''} [{mi['erp']['evidence_id']}]"],
-                 ["Beta (raw / Blume-adjusted)", f"{beta['value']:.2f} / {beta['adjusted']:.2f}",
-                  f"{beta['n']}m monthly regression vs S&P 500 ETF, {beta['window']}, R2 {beta['r2']:.2f}, s.e. {beta['se']:.2f} [{', '.join(beta['evidence_ids'])}]"],
+    wacc_rows = [[mi["rf"].get("label", "Risk-free rate"), fmt_pct(mi["rf"]["value"], 2), mi["rf"].get("source_text", f"[{mi['rf']['evidence_id']}]")],
+                 ["Equity risk premium (mature market)", fmt_pct(mi["erp"]["value"], 2), f"Damodaran implied ERP {mi['erp'].get('as_of') or ''} [{mi['erp']['evidence_id']}]"]]
+    if mi.get("crp"):
+        wacc_rows.append(["Country risk premium", fmt_pct(mi["crp"]["value"], 2), mi["crp"]["source_text"]])
+    wacc_rows += [[beta.get("label", "Beta (raw / Blume-adjusted)"), f"{beta['value']:.2f} / {beta['adjusted']:.2f}", beta["description"]],
                  ["Cost of equity", fmt_pct(d["ke"], 2), "CAPM: rf + beta x ERP"],
                  ["After-tax cost of debt", fmt_pct(d["kd_post"], 2), base["drivers"]["kd"]["rationale"]],
                  ["Weight of equity (market)", fmt_pct(d["we"], 1), "Price x diluted shares vs book gross debt"],
@@ -94,12 +95,13 @@ def assemble(pl) -> dict:
                 ["- Gross debt", money(d["debt_latest"], 0)], ["- Non-controlling interests", money(d["nci_latest"], 0)],
                 ["- Lease liabilities treated as debt", money(d["lease_adj"], 0)], ["Equity value", money(d["equity_value"], 0)],
                 ["Diluted shares (m)", money(d["diluted_shares"], 1)], ["Intrinsic value per share (today)", money(d["value_per_share"])],
-                ["12-month target (value x (1+ke) - dividends)", money(d["target_12m"])],
+                ["DCF-only 12-month value (value x (1+ke) - dividends); headline target uses reconciled fair value", money(d["target_12m"])],
                 ["Terminal value share of EV", fmt_pct(d["tv_share"])],
                 ["Implied terminal EV / NTM EBITDA", f"{d['implied_tv_ebitda']:.1f}x"]]
     sens = val["sensitivity"]
+    sdp = 0 if min(min(r) for r in sens["values"]) >= 100 else 2
     sens_rows = [["WACC \\ g", *[fmt_pct(g) for g in sens["g"]]]] + \
-                [[fmt_pct(w), *[money(v) for v in row]] for w, row in zip(sens["wacc"], sens["values"])]
+                [[fmt_pct(w), *[money(v, sdp) for v in row]] for w, row in zip(sens["wacc"], sens["values"])]
     sc = val["scenarios"]
     nice = {"revenue_growth_delta": "growth", "margin_delta": "EBIT margin", "wacc_delta": "WACC", "terminal_g_delta": "terminal g",
             "revenue_shock_years": "growth shock years"}
@@ -120,9 +122,11 @@ def assemble(pl) -> dict:
                        f"{p['pe']:.1f}x" if p["pe"] else "n/m", money(p["market_cap"] / 1e9, 0), money(p["price"]), str(p["price_time"])[:16]]
                       for p in comps["peers"]]
         med = comps["medians"]
-        comps_note = (f"Medians: EV/EBITDA {med['ev_ebitda'] or 0:.1f}x, P/E {med['pe'] or 0:.1f}x. Target trades at "
-                      f"EV/EBITDA {comps['target_multiples']['ev_ebitda'] or 0:.1f}x, P/E {comps['target_multiples']['pe'] or 0:.1f}x. "
-                      f"Peer data: SEC XBRL (TTM) and timestamped aggregator prices.")
+        mx = lambda v: f"{v:.1f}x" if v else "n/m"  # noqa: E731
+        comps_note = (f"Medians: EV/EBITDA {mx(med['ev_ebitda'])}, P/E {mx(med['pe'])}. Target trades at "
+                      f"EV/EBITDA {mx(comps['target_multiples']['ev_ebitda'] if med['ev_ebitda'] else None)}, "
+                      f"P/E {mx(comps['target_multiples']['pe'])}. "
+                      f"Peer data: {sec.get('peer_source', 'issuer filings (TTM) and timestamped prices')}.")
     comps_used = any(m["id"] == "trading_comps" and m["status"] == "selected" for m in val["methods"])
     recon_text = "No defensible valuation." if rec.get("status") != "ok" else (
         f"Fair value estimate {money(rec['fair_value'])} {cur} = " + " + ".join(
@@ -136,7 +140,11 @@ def assemble(pl) -> dict:
             ("Margin x growth grid", min(min(r) for r in val["margin_growth_grid"]["values"]), max(max(r) for r in val["margin_growth_grid"]["values"]))]
     if comps_used and comps and comps.get("implied"):
         v = list(comps["implied"].values())
-        bars.append(("Comparables (implied)", min(v), max(v)))
+        iq = (comps.get("iqr") or {}).get("pe")
+        ttm_ni = (stm.get("ttm") or rows[-1]).get("net_income")
+        if iq and ttm_ni and d["diluted_shares"]:
+            v += [iq[0] * ttm_ni / 1e6 / d["diluted_shares"], iq[1] * ttm_ni / 1e6 / d["diluted_shares"]]
+        bars.append(("Comparables (P/E interquartile)" if iq else "Comparables (implied)", min(v), max(v)))
     pv = st.run_dir / "work" / "charts"
     pv.mkdir(parents=True, exist_ok=True)
     rev_series = [rows[i]["revenue"] / 1e6 for i in idx] + R[("IS", "revenue")][H:]
@@ -160,6 +168,9 @@ def assemble(pl) -> dict:
                         (f"the independent model critic raised {len(crit['model'])} findings." if crit.get("model_ran") else
                          "no model critic ran (no inference model configured).") +
                         (f" One revision round was performed." if st.get("revisions") else "") +
+                        (" Model critic findings and disposition: " + "; ".join(
+                            f"[{f['severity']}] {f['target'][:60]}: {f['required_revision'][:120]}" for f in crit.get("model", []))
+                         + (" - addressed in the revised synthesis." if st.get("revisions") else ".") if crit.get("model") else "") +
                         " Unresolved findings: " + ("; ".join(f"[{f['severity']}] {f['target']}: {f['problem']}" for f in
                                                              (crit.get("post_revision") or crit["deterministic"]) if f["severity"] != "minor")[:1500] or "none") + ".")
     label = st.data.get("label") or "DRAFT (validation pending)"
@@ -172,7 +183,7 @@ def assemble(pl) -> dict:
     latest = f"{periods[-1]['label']} (ended {periods[-1]['end']})" + (f"; interim to {stm['interim_end']} (TTM computed)" if stm.get("interim_end") else "")
     sr = st.get("retrieved").get("subsequent_results")
     if sr:
-        latest += f"; results announced {sr['filed']} not yet in XBRL (used qualitatively)"
+        latest += f"; results announced {sr['filed']} not yet in structured filings (used qualitatively)"
     so = ex["shares_outstanding"]
     prov_rows = []
     for item, dmap in ex["annual"]["prov"].items():
@@ -183,11 +194,11 @@ def assemble(pl) -> dict:
     methodology_notes = [
         "Methodology is version-controlled in methodology/ (fingerprint " + plan["methodology"]["methodology_sha256"] + "): source policy, "
         "normalization rules, valuation selection, forecasting/scenario framework, cost of capital, quality gates, critique checklists.",
-        "Historical data: SEC XBRL company facts; latest-filed value per period (restatements logged); 52/53-week years accepted.",
+        "Historical data: " + sec.get("fin_source_long", sec.get("fin_source", "issuer filings")) + ".",
         "Forecast: driver-based (growth, EBIT margin, tax, D&A, capex, NWC, payout, buybacks); every assumption labelled with rationale.",
         "DCF: FCFF, mid-period discounting from the valuation date; only cash flows after the latest balance-sheet date are counted; "
         "terminal value by value-driver formula FCFF = NOPAT x (1 - g/RONIC).",
-        "Cost of capital: CAPM with sourced risk-free rate and ERP, regression beta (Blume-adjusted); market-value weights.",
+        "Cost of capital: " + sec.get("coc_method", "CAPM with sourced risk-free rate and ERP, regression beta (Blume-adjusted); market-value weights") + ".",
         "Verification: workbook formulas recalculated in LibreOffice and compared with the engine; report numbers compared with the "
         "recalculated workbook; rendered pages inspected.",
         "Judgment tasks (synthesis, critique) use the configured inference model (" + str(syn.get("_provider")) + "). Storing methodology "
@@ -226,8 +237,8 @@ def summary_markdown(D: dict) -> str:
     L += [f"# {s['name']} ({s['ticker']}) - investment summary", "",
           f"*As of {D['as_of']} | price {money(D['price'])} {cur} ({D['price_source']}, {D['price_time']}) | status: {D['label']}*", "",
           "| Rating | Fair value | Range | 12m target | Expected return | Confidence |", "|---|---|---|---|---|---|",
-          f"| {D['rating']['rating']} | {money(rec.get('fair_value'))} | {money(rec.get('range_low'), 0)}-{money(rec.get('range_high'), 0)} | "
-          f"{money(rec.get('target_12m'))} | {fmt_pct(rec.get('expected_return'))} | {D['confidence']} |", "",
+          f"| {D['rating']['rating']} | {money(rec.get('fair_value'), 0)} | {money(rec.get('range_low'), 0)}-{money(rec.get('range_high'), 0)} | "
+          f"{money(rec.get('target_12m'), 0)} | {fmt_pct(rec.get('expected_return'))} | {D['confidence']} |", "",
           f"**{syn['headline']}**", "", "## Conclusion"] + [f"- {x}" for x in syn["executive_summary"][:4]] + ["", "## Thesis"]
     L += [f"- **{p['title']}** - {p['argument']} [{', '.join(p['evidence_ids'])}]" for p in syn["thesis_pillars"][:4]] or ["- No evidence-based thesis."]
     L += ["", "## Valuation", f"- DCF base {money(d['value_per_share'])} {cur}; bear {money(sc['bear']['value_per_share'])}, bull {money(sc['bull']['value_per_share'])}",

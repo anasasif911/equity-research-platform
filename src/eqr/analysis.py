@@ -84,7 +84,7 @@ def evidence_pack(ctx: dict) -> dict:
         "currency_units": f"{st['currency']}; financial lines in currency units (not millions) unless stated",
         "historical_financials": hist,
         "latest_interim": {"period_end": st.get("interim_end"), "ytd": st.get("ytd"), "ytd_prior_year": st.get("ytd_prior"),
-                           "evidence_id": fin_ev},
+                           "balance_sheet": st.get("latest_bs"), "trailing_twelve_months": st.get("ttm"), "evidence_id": fin_ev},
         "driver_summary": {k: v for k, v in drv["summary"].items()},
         "quality_flags": drv["quality_flags"],
         "reconciliation": ctx["reconciliation"],
@@ -158,7 +158,7 @@ def deterministic_synthesis(ctx: dict) -> dict:
 
 
 # ----------------------------------------------------------------------------- deterministic critics
-NUM = re.compile(r"(?<![A-Za-z0-9-])(\(?-?\d[\d,]*\.?\d*\)?)(\s?%|x\b|\s?(?:bn|billion|m|million))?")
+NUM = re.compile(r"(?<![A-Za-z0-9\-,.])(\(?-?\d[\d,]*\.?\d*\)?)(\s?%|x\b|\s?(?:bn|billion|m|million))?")
 
 
 def _numbers_in_pack(pack: Any) -> set[str]:
@@ -287,7 +287,7 @@ def critique_model_and_valuation(ctx: dict) -> list[dict]:
     if beta.get("value") is not None and not (0.4 <= beta["value"] <= 2.2):
         f.append({"area": "valuation", "severity": "major", "target": f"beta {beta['value']:.2f}",
                   "problem": "beta outside plausible bounds", "required_revision": "cross-check beta"})
-    if beta.get("r2") is not None and beta["r2"] < 0.15:
+    if beta.get("r2") is not None and beta["r2"] < 0.15:  # only for regression betas
         f.append({"area": "valuation", "severity": "minor", "target": f"beta R^2 {beta['r2']:.2f}",
                   "problem": "low explanatory power of the regression", "required_revision": "disclose; consider peer beta"})
     for c in ctx["reconciliation"]["checks"]:

@@ -27,7 +27,7 @@ def write_manifest(pl) -> dict:
     rec = st.get("valuation")["reconciled"]
     syn = st.get("synthesis")
     manifest = {
-        "run_id": st.run_dir.name, "security": {k: sec.get(k) for k in ("name", "ticker", "exchange", "cik")},
+        "run_id": st.run_dir.name, "security": {k: sec.get(k) for k in ("name", "ticker", "exchange", "cik", "identifier")},
         "information_cutoff": st.data["cutoff"], "generated_at": utcnow().isoformat(), "label": st.data.get("label"),
         "rating": info["rating"], "fair_value": rec.get("fair_value"), "range": [rec.get("range_low"), rec.get("range_high")],
         "target_12m": rec.get("target_12m"), "confidence": syn.get("confidence"), "model_provider": syn.get("_provider"),

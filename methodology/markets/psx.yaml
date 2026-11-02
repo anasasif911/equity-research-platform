@@ -1,0 +1,62 @@
+# Pakistan Stock Exchange (PSX) market profile. Read by eqr.sources.psx and
+# eqr.pipeline (market = psx). All market parameters must still be sourced at
+# run time; nothing here is a market observation.
+version: 1
+market: psx
+currency: PKR
+country: PK
+exchange_name: Pakistan Stock Exchange
+data_portal: https://dps.psx.com.pk
+company_page: https://dps.psx.com.pk/company/{symbol}
+document_url: https://dps.psx.com.pk{path}
+
+# Announcement titles that identify primary financial documents (case-insensitive regex)
+documents:
+  annual_report: "transmission of annual report|annual report for the year"
+  quarterly_report: "transmission of (quarterly|half[- ]yearly) report|condensed interim|quarterly report for"
+  results: "financial results for the (year|quarter|half|period)"
+  briefing: "presentation of corporate briefing|corporate briefing.*presentation"
+  operating_data: "production and sales|sales data"
+  material_information: "material information"
+
+source_tiers:
+  annual_report: 1          # audited financial statements, issuer via PSX
+  quarterly_report: 1       # un-audited condensed interim statements, issuer via PSX
+  psx_quote: 1              # exchange price/quote (timestamped)
+  psx_vendor_summary: 4     # Capital Stake summary figures on the PSX portal: cross-check only
+  gis_auction: 2            # GoP Ijarah Sukuk auction results (exchange-published)
+  damodaran: 3
+
+# Data-access notes (recorded when the run starts; see docs/OPERATIONS.md)
+access_notes: >
+  PSX JSON/AJAX endpoints (/timeseries, /company/reports, /announcements search)
+  return 403 to non-browser clients; the platform does not attempt to bypass this.
+  Company pages, document downloads and GIS auction pages are public HTML/PDF.
+  Price HISTORY is therefore not retrieved automatically; beta is estimated
+  bottom-up from Damodaran's emerging-market industry betas (preferred for
+  thinly traded stocks in any case).
+
+cost_of_capital:
+  risk_free: >
+    Longest-tenor fixed-rate GoP Ijarah Sukuk cut-off yield from the most recent
+    PSX GIS auction results, MINUS Pakistan's sovereign default spread (Damodaran
+    ctryprem), so that the country risk premium is not double counted.
+  min_tenor_years: 3
+  equity_risk_premium: "Mature-market implied ERP (Damodaran, monthly) + Pakistan CRP (Damodaran ctryprem) x lambda"
+  lambda: 1.0
+  beta: "Bottom-up: Damodaran emerging-markets industry unlevered beta (cash-corrected), re-levered at the company's market D/E and marginal tax rate. No Blume adjustment."
+  cost_of_debt_floor: "pre-tax cost of debt is floored at the government yield (KIBOR-linked borrowing cannot be cheaper than the sovereign)"
+
+terminal_growth_cap: 0.05     # nominal PKR; analyst assumption, always <= adjusted risk-free; key sensitivity
+statutory_tax_note: "Read from the annual report tax note (e.g. 29% corporate + 10% super tax); falls back to forecasting.yaml PK default"
+
+sector_playbooks:            # PSX sector name (upper case) -> playbook id
+  AUTOMOBILE ASSEMBLER: autos_pk
+  AUTOMOBILE PARTS & ACCESSORIES: autos_pk
+  CEMENT: general
+  FERTILIZER: general
+  COMMERCIAL BANKS: banks
+  OIL & GAS EXPLORATION COMPANIES: resources
+  POWER GENERATION & DISTRIBUTION: utilities
+  TECHNOLOGY & COMMUNICATION: software_internet
+  INSURANCE: insurance

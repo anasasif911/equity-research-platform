@@ -44,10 +44,13 @@ def _summary(st: RunState) -> None:
 
 
 def cmd_run(a) -> int:
-    opts = {"cutoff": a.cutoff, "fixtures": a.fixtures, "sector": a.sector, "cik": a.cik,
+    opts = {"cutoff": a.cutoff, "fixtures": a.fixtures, "sector": a.sector, "cik": a.cik, "market": a.market,
+            "assumptions_file": str(Path(a.assumptions).resolve()) if a.assumptions else None,
             "peers": [p.strip().upper() for p in a.peers.split(",")] if a.peers else None,
             "config_overrides": {"model": {"provider": a.provider}} if a.provider else None}
     ticker = f"{a.ticker}:{a.exchange}" if a.exchange else a.ticker
+    if a.exchange and a.exchange.upper() == "PSX":
+        opts["market"] = "psx"
     st = pipeline.start(ticker, config=a.config, options=opts, verbose=a.verbose)
     try:
         status = pipeline.run(st, a.config, until=a.until)
@@ -138,6 +141,8 @@ def main(argv=None) -> int:
     r.add_argument("--peers", help="comma-separated peer tickers (default: sector playbook)")
     r.add_argument("--sector", help="force a sector playbook id (methodology/playbooks/sectors)")
     r.add_argument("--cik", help="force SEC CIK (resolves ambiguity)")
+    r.add_argument("--market", choices=["auto", "us_sec", "psx"], help="listing market (default auto: SEC, then PSX)")
+    r.add_argument("--assumptions", help="YAML of analyst assumption overrides (each with rationale and evidence ids)")
     r.add_argument("--until", help="stop after this stage")
     r.add_argument("--fixtures", help=argparse.SUPPRESS)  # offline SYNTHETIC test mode
     r.set_defaults(fn=cmd_run)

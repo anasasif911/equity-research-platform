@@ -152,11 +152,11 @@ class _Doc(BaseDocTemplate):
         cv.setFont(f["sans"], 10)
         cv.setFillColor(col("gold_light"))
         s = self.D["security"]
-        cv.drawString(MARGIN, H - 39 * mm, f"{s['ticker']}  |  {s.get('exchange') or ''}  |  CIK {s['cik']}  |  "
-                                           f"{(s.get('sic_description') or '').title()}")
+        cv.drawString(MARGIN, H - 39 * mm, f"{s['ticker']}  |  {s.get('exchange') or ''}  |  {s.get('identifier', '')}  |  "
+                                           f"{(s.get('classification') or '').title()}")
         cv.setFillColor(colors.white)
         cv.setFont(f["sans_bold"], 12)
-        cv.drawString(MARGIN, H - 52 * mm, f"{self.D['rating']['rating']}   |   Fair value {money(self.D['rec'].get('fair_value'))} "
+        cv.drawString(MARGIN, H - 52 * mm, f"{self.D['rating']['rating']}   |   Fair value {money(self.D['rec'].get('fair_value'), 0)} "
                                            f"{self.D['currency']}   |   Price {money(self.D['price'])}")
         self._footer(cv, doc)
         self._watermark(cv)
@@ -192,9 +192,9 @@ class _Doc(BaseDocTemplate):
 
 def kpi_strip(D, S):
     rec = D["rec"]
-    cells = [("Rating", D["rating"]["rating"]), ("Fair value", money(rec.get("fair_value"))),
+    cells = [("Rating", D["rating"]["rating"]), ("Fair value", money(rec.get("fair_value"), 0)),
              ("Range", f"{money(rec.get('range_low'), 0)}-{money(rec.get('range_high'), 0)}"),
-             ("12m target", money(rec.get("target_12m"))), ("Price", money(D["price"])),
+             ("12m target", money(rec.get("target_12m"), 0)), ("Price", money(D["price"])),
              ("Exp. return", fmt_pct(rec.get("expected_return"))), ("Confidence", D["confidence"])]
     row = [[P(esc(k), S["kpi_label"]) for k, _ in cells], [P(esc(v), S["kpi_value"]) for _, v in cells]]
     wts = [1.35, 1, 1.15, 1, 1, 1, 1]
@@ -228,7 +228,7 @@ def build_report(path: Path, D: dict) -> None:
     s = D["security"]
     story.append(table([["Item", "Detail"],
                         ["Issuer", s["name"]], ["Ticker / exchange", f"{s['ticker']} / {s.get('exchange') or 'n/a'}"],
-                        ["SEC CIK / SIC", f"{s['cik']} / {s.get('sic')} {s.get('sic_description') or ''}"],
+                        ["Identifier / classification", f"{s.get('identifier', '')} / {s.get('classification') or ''}"],
                         ["Reference price", f"{money(D['price'])} {cur} at {D['price_time']} - {D['price_source']}"],
                         ["Information cutoff", D["cutoff"]],
                         ["Latest financial period", D["latest_period_note"]],
@@ -237,11 +237,11 @@ def build_report(path: Path, D: dict) -> None:
                         ["Document status", D["label"]]], [45, 129], S, name="security_id"))
     story.append(P("Executive summary", S["h1"]))
     story += bullets(syn["executive_summary"], S)
-    story.append(CondPageBreak(70 * mm))
-    story.append(_img(D["charts"]["football"], 172))
+    story.append(CondPageBreak(75 * mm))
+    story.append(_img(D["charts"]["football"], 168))
     story.append(P(f"Source: platform valuation engine; price {D['price_source']}. Bars show the bear-to-bull range for DCF and "
                    f"the full WACC x growth sensitivity range; comps bar shows peer interquartile-implied values where available.", S["caption"]))
-    story.append(PageBreak())
+    story.append(CondPageBreak(120 * mm))
 
     # 1 thesis
     story.append(P("1. Investment view, thesis and variant perception", S["h1"]))
@@ -276,12 +276,12 @@ def build_report(path: Path, D: dict) -> None:
     h = D["hist_table"]
     story.append(table(h["rows"], [50] + [124 / (len(h["rows"][0]) - 1)] * (len(h["rows"][0]) - 1), S,
                        numeric_cols=tuple(range(1, len(h["rows"][0]))), name="hist"))
-    story.append(P(f"{cur} millions except per-share and ratios. Source: SEC XBRL company facts [{D['fin_ev']}]; filing-level "
+    story.append(P(f"{cur} millions except per-share and ratios. Source: {esc(s.get('fin_source', ''))} [{D['fin_ev']}]; value-level "
                    f"provenance for every value in the workbook 'Provenance' sheet.", S["caption"]))
     story.append(_img(D["charts"]["revenue"], 170))
-    story.append(P("Source: SEC XBRL (history); platform forecast (gold).", S["caption"]))
+    story.append(P(f"Source: {esc(s.get('fin_source', ''))} (history); platform forecast (gold).", S["caption"]))
     story.append(_img(D["charts"]["cash"], 170))
-    story.append(P("Source: SEC XBRL cash-flow statements.", S["caption"]))
+    story.append(P(f"Source: {esc(s.get('fin_source', ''))} - cash-flow statements.", S["caption"]))
     story.append(P(esc(syn["financial_assessment"]), S["body"]))
     if D["quality_flags"]:
         story.append(P("Financial-quality flags (computed)", S["h2"]))
@@ -309,16 +309,16 @@ def build_report(path: Path, D: dict) -> None:
     story.append(table([["Method", "Status", "Weight", "Value/share", "Reason"]] +
                        [[m["label"], m["status"].upper(), fmt_pct(m["weight"], 0) if m["weight"] else "-",
                          money(D["values"].get(m["id"])) if D["values"].get(m["id"]) else "-", m["reason"]] for m in D["methods"]],
-                       [40, 17, 13, 17, 87], S, numeric_cols=(2, 3), name="methods"))
+                       [40, 17, 13, 19, 85], S, numeric_cols=(2, 3), name="methods"))
     story.append(P("Cost of capital", S["h2"]))
     story.append(table([["Input", "Value", "Source / basis"]] + D["wacc_rows"], [45, 20, 109], S, numeric_cols=(1,), name="wacc"))
     story.append(P("DCF summary and enterprise-to-equity bridge (base case)", S["h2"]))
     story.append(table([["Item", f"{cur} m / per share"]] + D["dcf_rows"], [110, 64], S, numeric_cols=(1,), name="dcf"))
     story.append(_img(D["charts"]["bridge"], 165))
     story.append(P(f"Terminal value: {esc(D['tv_note'])}", S["body"]))
-    story.append(P("Sensitivity of value per share to WACC and terminal growth", S["h2"]))
-    story.append(table(D["sens_rows"], [30] + [28.8] * 5, S, numeric_cols=(1, 2, 3, 4, 5), name="sensitivity"))
-    story.append(P("Native-formula grid in the workbook 'Sensitivity' sheet; centre equals the base DCF value.", S["caption"]))
+    story.append(KeepTogether([P("Sensitivity of value per share to WACC and terminal growth", S["h2"]),
+                               table(D["sens_rows"], [30] + [28.8] * 5, S, numeric_cols=(1, 2, 3, 4, 5), name="sensitivity"),
+                               P("Native-formula grid in the workbook 'Sensitivity' sheet; centre equals the base DCF value.", S["caption"])]))
     story.append(P("Reverse DCF: what the price requires", S["h2"]))
     story.append(P(esc(D["reverse"]["narrative_growth"]) + " " + esc(D["reverse"]["narrative_margin"]), S["body"]))
     if D.get("comps_rows"):
@@ -369,7 +369,7 @@ def build_report(path: Path, D: dict) -> None:
     story.append(P(esc(syn["governance_capital_allocation"]), S["body"]))
     story.append(table(D["capalloc_rows"], [50] + [124 / (len(D["capalloc_rows"][0]) - 1)] * (len(D["capalloc_rows"][0]) - 1), S,
                        numeric_cols=tuple(range(1, len(D["capalloc_rows"][0]))), name="capalloc"))
-    story.append(P(f"{cur} millions. Source: SEC XBRL cash-flow statements [{D['fin_ev']}].", S["caption"]))
+    story.append(P(f"{cur} millions. Source: {esc(D['security'].get('fin_source', ''))} [{D['fin_ev']}].", S["caption"]))
 
     # 11 evidence gaps
     story.append(CondPageBreak(110 * mm))
@@ -384,7 +384,7 @@ def build_report(path: Path, D: dict) -> None:
     story.append(P(esc(D["critique_summary"]), S["body"]))
 
     # appendix
-    story.append(PageBreak())
+    story.append(CondPageBreak(90 * mm))
     story.append(P("Appendix A. Methodology", S["h1"]))
     story += bullets(D["methodology_notes"], S)
     story.append(P("Appendix B. Source notes", S["h1"]))
@@ -413,12 +413,13 @@ def build_summary(path: Path, D: dict) -> None:
     story.append(P("Conclusion", S["h2"]))
     story += bullets(syn["executive_summary"][:4], S)
     story.append(P("Thesis", S["h2"]))
-    story += bullets([f"{p['title']}: {p['argument']} [{', '.join(p['evidence_ids'])}]" for p in syn["thesis_pillars"][:4]]
+    story += bullets([f"{p['title']}: {p['argument']}" + ("" if "[EV-" in p["argument"] else f" [{', '.join(p['evidence_ids'])}]")
+                      for p in syn["thesis_pillars"][:4]]
                      or ["No evidence-based thesis (see report)."], S)
     story.append(P("Valuation", S["h2"]))
     story.append(table([["Measure", "Value"],
                         ["DCF value per share (base)", f"{money(D['dcf']['value_per_share'])} {cur}"],
-                        ["Bear / bull", f"{money(D['scen']['bear']['value_per_share'])} / {money(D['scen']['bull']['value_per_share'])}"],
+                        ["Bear / bull", f"{money(D['scen']['bear']['value_per_share'], 0)} / {money(D['scen']['bull']['value_per_share'], 0)}"],
                         ["WACC / terminal growth", f"{fmt_pct(D['dcf']['wacc'])} / {fmt_pct(D['dcf']['terminal_g'])}"],
                         ["Terminal value share of EV", fmt_pct(D["dcf"]["tv_share"])],
                         ["Price implies (reverse DCF)", D["reverse"]["narrative_growth"]]], [60, 114], S, name="summary_val"))

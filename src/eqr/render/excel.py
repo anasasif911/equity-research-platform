@@ -27,7 +27,7 @@ GOLD = Side(style="medium", color=xl("gold"))
 INK = Side(style="thin", color=xl("ink"))
 
 SHEET_TITLES = {
-    "Hist_Data": "Historical data (as reported, SEC XBRL)", "Assumptions": "Assumptions and operating drivers",
+    "Hist_Data": "Historical data (as reported in issuer filings)", "Assumptions": "Assumptions and operating drivers",
     "IS": "Income statement", "BS": "Balance sheet (invested-capital form)", "CF": "Cash-flow statement",
     "Schedules": "Working capital, capex/PP&E, debt, distributions and share count", "WACC": "Cost of capital",
     "DCF": "FCFF discounted cash flow", "Sensitivity": "Sensitivity: value per share (WACC x terminal growth)",
@@ -244,12 +244,12 @@ def build_workbook(path: Path, *, spec: ModelSpec, data: dict) -> dict:
     ws.column_dimensions["A"].width = 30
     ws.column_dimensions["B"].width = 110
     lines = [
-        ("Security", f"{sec['name']} | ticker {sec['ticker']} | {sec.get('exchange') or ''} | CIK {sec['cik']} | SIC {sec.get('sic')} "
-                     f"{sec.get('sic_description') or ''}"),
+        ("Security", f"{sec['name']} | ticker {sec['ticker']} | {sec.get('exchange') or ''} | {sec.get('identifier', '')} | "
+                     f"{sec.get('classification') or ''}"),
         ("Information cutoff", data["cutoff"]),
         ("Reference price", f"{data['price']:,.2f} {cur} at {data['price_time']} ({data['price_source']})"),
         ("Reporting currency / units", f"{cur}; financial lines in millions; per-share in {cur}; shares in millions"),
-        ("Accounting basis", f"{data['taxonomy']} as reported in SEC XBRL; fiscal years end {data['fye_note']}"),
+        ("Accounting basis", f"{data['taxonomy']}; source: {sec.get('fin_source', '')}; fiscal years end {data['fye_note']}"),
         ("Model status", data["label"]),
         ("Data label", "SYNTHETIC TEST DATA - NOT A REAL COMPANY" if data["synthetic"] else "Live public sources (see Sources)"),
         ("Conventions", "Blue font = hard-coded input (historical data or assumption). Black = formula. Grey italic = memo. "
@@ -447,7 +447,7 @@ def build_workbook(path: Path, *, spec: ModelSpec, data: dict) -> dict:
         ws.cell(row=last + 1, column=12, value="Median").font = _font(bold=True)
         for col in "MNO":
             c = ws[f"{col}{last + 1}"]
-            c.value = f"=MEDIAN({col}6:{col}{last})"
+            c.value = f'=IF(COUNT({col}6:{col}{last})>0,MEDIAN({col}6:{col}{last}),"n/m")'
             c.number_format = FMT["multiple"]
             c.font = _font(bold=True)
         for j, w in enumerate([8, 26, 10, 22, 10, 12, 12, 11, 12, 12, 12, 12, 9, 10, 8, 14, 20]):
@@ -474,8 +474,8 @@ def build_workbook(path: Path, *, spec: ModelSpec, data: dict) -> dict:
 
     # ---------------------------------------------------------------- Provenance
     ws = wb.create_sheet("Provenance")
-    _title(ws, "Cell-level provenance of historical inputs", "Every Hist_Data value -> XBRL concept, filing accession, form, filing date", 8)
-    _table(ws, 5, ["Line item", "Period end", "Value", "XBRL concept", "Accession", "Form", "Filed", "Evidence id"],
+    _title(ws, "Cell-level provenance of historical inputs", "Every Hist_Data value -> source label/concept, document and page (or accession), filing date", 8)
+    _table(ws, 5, ["Line item", "Period end", "Value", "Source label / concept", "Document ref", "Document", "Filed", "Evidence id"],
            data["provenance_rows"], [None, None, "millions", None, None, None, None, None], [28, 12, 16, 52, 24, 8, 12, 12])
     ws.freeze_panes = "A6"
     _print(ws)

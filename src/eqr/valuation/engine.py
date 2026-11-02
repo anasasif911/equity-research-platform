@@ -28,6 +28,11 @@ def select_methods(rules: dict, archetype: str, avail: dict, playbook: dict) -> 
         status = "selected"
         if archetype in (m.get("unsuitable_archetypes") or []):
             status, reasons = "rejected", [f"unsuitable for {archetype} archetype ({m.get('rationale', '')})"]
+        if mid == "ddm" and avail.get("payout_known") and not avail.get("payout_ok"):
+            out.append({"id": mid, "label": m["label"], "status": "rejected",
+                        "reason": f"payout ratio {avail.get('payout_text', '')} is below 30% (or above 100%): earnings are mostly retained "
+                                  "or distributed by buybacks, so a dividend model would understate value"})
+            continue
         missing = [r for r in m.get("requires", []) if r not in ("fcff_dcf",) and not avail.get(r)]
         if status == "selected" and missing:
             status, reasons = "rejected", [f"required inputs unavailable: {', '.join(missing)}"]
@@ -209,7 +214,8 @@ def comps(target: dict, peers: list[dict]) -> dict:
                 "ev_sales": safe_div(tm - bridge, target.get("ttm_revenue"))}
     central = statistics.mean(implied.values()) if implied else None
     return {"peers": rows, "medians": medians, "iqr": {k: q(k) for k in ("ev_ebitda", "pe")}, "implied": implied,
-            "central": central, "target_multiples": tgt_mult, "n_valid": sum(1 for r in rows if r.get("ev_ebitda"))}
+            "central": central, "target_multiples": tgt_mult,
+            "n_valid": sum(1 for r in rows if r.get("ev_ebitda") or r.get("pe"))}
 
 
 # ----------------------------------------------------------------------------- DDM / RI

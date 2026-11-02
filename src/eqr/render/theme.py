@@ -63,6 +63,6 @@ def mpl_setup():
         "axes.linewidth": 0.6, "xtick.color": c("grey_600"), "ytick.color": c("grey_600"), "axes.spines.top": False,
         "axes.spines.right": False, "axes.grid": True, "grid.color": c("grey_100"), "grid.linewidth": 0.6,
         "axes.titlesize": 9, "axes.titleweight": "bold", "axes.titlecolor": c("ink"), "legend.frameon": False,
-        "figure.dpi": 200, "savefig.dpi": 200, "savefig.bbox": "tight",
+        "axes.axisbelow": True, "figure.dpi": 200, "savefig.dpi": 200, "savefig.bbox": "tight",
     })
     return plt

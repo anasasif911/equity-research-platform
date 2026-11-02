@@ -142,8 +142,9 @@ def evaluate_gates(pl, wb_result: dict | None, report_check: dict | None, visual
     cutoff = dt.datetime.fromisoformat(st.data["cutoff"]).date()
     pol = M.source_policy["freshness_days"]
     G = []
-    G.append(_g("G01", "VERIFIED" if sec.get("cik") else "FAILED",
-                f"CIK {sec.get('cik')} via SEC ticker map [{sec.get('evidence_id')}]; exchange {sec.get('exchange')}", M))
+    G.append(_g("G01", "VERIFIED" if (sec.get("cik") or sec.get("identifier")) else "FAILED",
+                f"{sec.get('identifier')} via {sec.get('resolution_source', 'exchange/regulator listing')} [{sec.get('evidence_id')}]; "
+                f"exchange {sec.get('exchange')}", M))
     ex = st.get("extracted")
     n_vals = sum(len(v) for v in ex["annual"]["prov"].values())
     n_prov = sum(1 for v in ex["annual"]["prov"].values() for p in v.values() if p.get("accn"))
@@ -151,7 +152,7 @@ def evaluate_gates(pl, wb_result: dict | None, report_check: dict | None, visual
         G.append(_g("G02", "FAILED", "SYNTHETIC fixture data: not traceable to a real filing (test run)", M))
     else:
         G.append(_g("G02", "VERIFIED" if n_vals == n_prov and n_vals else "FAILED",
-                    f"{n_prov}/{n_vals} historical values carry accession-level provenance from SEC XBRL [{fev}]", M))
+                    f"{n_prov}/{n_vals} historical values carry document-level provenance ({sec.get('fin_source', '')}) [{fev}]", M))
     ny = len(stm["periods"])
     G.append(_g("G03", "VERIFIED" if ny >= 5 else ("QUALIFIED" if ny >= 3 else "FAILED"), f"{ny} fiscal years of annual history", M))
 
@@ -189,6 +190,9 @@ def evaluate_gates(pl, wb_result: dict | None, report_check: dict | None, visual
     et = parse_date(mi.get("erp", {}).get("as_of"))
     if et and (cutoff - et).days > pol["equity_risk_premium"]:
         stale.append(f"ERP {et}")
+    ct = parse_date((mi.get("crp") or {}).get("as_of"))
+    if ct and (cutoff - ct).days > pol["equity_risk_premium"]:
+        stale.append(f"country risk premium {ct} ({(cutoff - ct).days}d; source updates semi-annually)")
     if not et and "erp" in mi:
         stale.append("ERP date not stated in source")
     fy_end = parse_date(stm["periods"][-1]["end"])
@@ -204,13 +208,15 @@ def evaluate_gates(pl, wb_result: dict | None, report_check: dict | None, visual
         issues.append(f"TV share {fmt_pct(d['tv_share'])} > 80%")
     if d["terminal_g"] > mi["rf"]["value"]:
         issues.append("g > rf")
-    if not (3 <= (d["implied_tv_ebitda"] or 0) <= 40):
-        issues.append(f"implied terminal EV/EBITDA {d['implied_tv_ebitda']:.1f}x outside 3-40x")
+    rng = M.gates["tolerances"].get("implied_tv_ebitda_range", {})
+    lo_m, hi_m = rng.get(stm["currency"], rng.get("default", [3, 40]))
+    if not (lo_m <= (d["implied_tv_ebitda"] or 0) <= hi_m):
+        issues.append(f"implied terminal EV/EBITDA {d['implied_tv_ebitda']:.1f}x outside {lo_m}-{hi_m}x ({stm['currency']} range)")
     if d["ronic"] < d["wacc"] - 1e-9:
         issues.append("RONIC < WACC")
     G.append(_g("G10", "VERIFIED" if not issues else ("QUALIFIED" if all("TV share" in i for i in issues) else "FAILED"),
                 "; ".join(issues) or f"TV share {fmt_pct(d['tv_share'])}, g {fmt_pct(d['terminal_g'])} < rf {fmt_pct(mi['rf']['value'])}, "
-                                     f"terminal EV/EBITDA {d['implied_tv_ebitda']:.1f}x, RONIC {fmt_pct(d['ronic'])} >= WACC {fmt_pct(d['wacc'])}", M))
+                                     f"terminal EV/EBITDA {d['implied_tv_ebitda']:.1f}x (range {lo_m}-{hi_m}x), RONIC {fmt_pct(d['ronic'])} >= WACC {fmt_pct(d['wacc'])}", M))
     sc = val["scenarios"]
     s_ok = chk["chk_sens_wacc"] > 0 and chk["chk_sens_g"] >= 0 and sc["bear"]["value_per_share"] <= sc["base"]["value_per_share"] <= sc["bull"]["value_per_share"]
     mg = val["margin_growth_grid"]["values"]
@@ -274,8 +280,8 @@ def check_reports(paths: dict, D_keys: dict, wb_result: dict | None) -> dict:
     expected = {"price": money(k["price"]), "dcf_value": money(k["dcf_value"]), "wacc": fmt_pct(k["wacc"]),
                 "tv_share": fmt_pct(k["tv_share"])}
     if k.get("fair_value") is not None:
-        expected["fair_value"] = money(k["fair_value"])
-        expected["target_12m"] = money(k["target_12m"])
+        expected["fair_value"] = money(k["fair_value"], 0)
+        expected["target_12m"] = money(k["target_12m"], 0)
     missing = [f"{n}={v} (report)" for n, v in expected.items() if v not in txt_r]
     missing += [f"{n}={v} (summary pdf)" for n, v in expected.items() if n in ("price", "fair_value", "dcf_value") and v not in txt_s]
     missing += [f"{n}={v} (summary md)" for n, v in expected.items() if n in ("price", "fair_value", "dcf_value") and v not in md]

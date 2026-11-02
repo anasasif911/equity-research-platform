@@ -42,8 +42,24 @@ eqr doctor
 
 ## Run
 
+Pakistan Stock Exchange (PSX) listings:
+
+```bash
+eqr run SAZEW --market psx
+```
+
+SEC-registered (US) listings:
+
 ```bash
 eqr run AAPL
+```
+
+With `--market auto` (default) a ticker that is not an SEC registrant is looked up on the PSX.
+
+Optional analyst overrides (each with rationale and evidence ids), applied within the methodology guardrails and labelled "ANALYST OVERRIDE" in the workbook:
+
+```bash
+eqr run SAZEW --market psx --assumptions my_overrides.yaml
 ```
 
 With options:
@@ -67,6 +83,15 @@ eqr requests runs/AAPL-20261102-160000
 ```
 
 Exit codes: 0 complete, 3 awaiting evidence, 4 awaiting model answer, 5 needs your input (e.g. ambiguous ticker), 6 budget stop, 1 failed.
+
+## Markets
+
+| Market | Financial statements | Price | Risk-free | Beta | Equity risk |
+|---|---|---|---|---|---|
+| PSX (`--market psx`) | Annual report (audited statements + six-year summary) and latest quarterly report PDFs from the PSX data portal, parsed by column position, OCR artefacts normalised, conflicts resolved by accounting identities | PSX company-page quote (timestamped) | Longest recent fixed-rate GoP Ijarah Sukuk cut-off yield (PSX GIS auctions) minus Pakistan default spread | Bottom-up: Damodaran EM industry beta re-levered | Damodaran mature ERP + Pakistan CRP |
+| SEC (`--market us_sec`) | XBRL company facts | Yahoo/Stooq | US Treasury 10y | 60-month regression, Blume-adjusted | Damodaran implied ERP |
+
+Allowed network hosts needed for PSX runs: `dps.psx.com.pk`, `pages.stern.nyu.edu`.
 
 ## Model providers (judgment tasks)
 

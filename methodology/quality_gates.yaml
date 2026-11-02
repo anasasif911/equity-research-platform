@@ -11,6 +11,10 @@ tolerances:
   subtotal_rel: 0.005
   workbook_vs_engine_rel: 0.0005
   report_vs_workbook_abs_per_share: 0.01
+  # implied terminal EV/NTM EBITDA sanity range by valuation currency. Frontier/high-rate markets
+  # (PKR: ~20% WACC, 39% tax) trade at structurally lower multiples; the range is a plausibility
+  # screen, not a target.
+  implied_tv_ebitda_range: {default: [3, 40], PKR: [1.5, 20]}
 
 gates:
   - {id: G01, name: "Security resolved unambiguously", severity: critical}

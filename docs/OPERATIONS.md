@@ -42,6 +42,15 @@ Gate G17 is QUALIFIED after automated layout checks (tables within frame, summar
 
 then `eqr resume <run> --from-stage validate`.
 
-## Non-SEC listings
+## PSX listings
 
-Resolution and fundamentals are automated for SEC registrants (US listings and foreign private issuers filing 10-K/20-F/40-F, US GAAP or IFRS). For other exchanges (PSX, NSE, LSE, …) an exchange adapter is required (see LIMITATIONS); until then the run stops at `needs_input` rather than analysing the wrong security.
+Automated end to end for companies whose annual report on the PSX data portal is a text (or OCR-text) PDF:
+
+* hosts: `dps.psx.com.pk` (company page, filings, GIS auctions), `pages.stern.nyu.edu` (Damodaran country risk, ERP, EM betas);
+* PSX's JSON/AJAX endpoints refuse non-browser clients (403); the platform does not bypass this, so price history is not used
+  (beta is bottom-up, which is preferable for thinly traded PSX stocks anyway);
+* scanned image-only PDFs need OCR (not installed here); such runs stop at `awaiting_evidence` with an explanation;
+* sector playbooks are mapped from the PSX sector name (`methodology/markets/psx.yaml`); `autos_pk` is detailed, other sectors
+  currently fall back to general playbooks.
+
+Judgment overrides: write `work/assumption_overrides.json` in the run folder (or pass `--assumptions`) and resume from `forecast`.

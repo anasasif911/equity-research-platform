@@ -1,0 +1,70 @@
+# Label rules for PDF financial statements (IFRS as adopted in Pakistan).
+# Each canonical item lists regexes matched against the normalized row label
+# (lower case, single spaces, punctuation kept). First matching item wins, in
+# file order, so specific patterns come before general ones. "add" means the
+# matched rows are summed into the canonical item.
+version: 1
+
+income_statement:
+  revenue: ["^(sales|revenue|turnover) ?(- ?)?(net)?$", "^net (sales|revenue|turnover)", "^revenue from contracts?", "^sales - net"]
+  cogs: ["^cost of (sales|revenue|goods sold)"]
+  gross_profit: ["^gross (profit|loss)"]
+  distribution: ["^(distribution|selling)( and| &) (marketing|distribution)? ?(costs?|expenses)", "^selling (and|&) distribution", "^distribution (and|&) marketing", "^distribution cost"]
+  admin: ["^administrative (and general )?expenses"]
+  other_opex: ["^other (operating )?(expenses|charges)"]
+  total_opex: ["^total operating expenses"]
+  operating_income: ["^operating (profit|loss|profit / \\(loss\\))$", "^profit from operations$"]
+  ebit_before_finance: ["^operating profit before finance cost"]
+  other_income: ["^other (operating )?income"]
+  interest_expense: ["^finance (cost|costs|charges)"]
+  pretax_income: ["^profit before taxation$", "^profit / \\(loss\\) before taxation$", "^\\(loss\\) / profit before taxation$"]
+  pretax_before_levy: ["^profit before levy and taxation"]
+  levy: ["^levy"]
+  income_tax: ["^taxation( / levies)?$", "^income tax expense", "^taxation - net"]
+  net_income: ["^net profit for the (year|period)$", "^profit after taxation$", "^profit for the (year|period)$", "^net profit for the (year|period)", "^net profit after taxation for the year from continuing"]
+  eps_diluted: ["^earnings per share - basic and diluted", "^earnings / \\(loss\\) per share - basic and diluted$", "^basic( and diluted)? earnings per share"]
+
+balance_sheet:
+  share_capital: ["^issued, subscribed"]
+  total_equity: ["^shareholders'? equity$", "^total equity$", "^total shareholders'? equity"]
+  long_term_debt: ["^long term (financing|loans?|borrowings)", "^diminishing musharakah financing"]
+  deferred_tax_liability: ["^deferred tax(ation)? liabilit"]
+  employee_benefits: ["^post employment benefits", "^employee benefits", "^staff retirement"]
+  total_noncurrent_liabilities: ["^total non[- ]current liabilities"]
+  accounts_payable: ["^trade and other payables"]
+  short_term_debt: ["^short term (borrowings|financing|running finance)"]
+  current_portion_ltd: ["^current portion of (non[- ]current|long[- ]term) liabilities", "^current portion of long term"]
+  accrued_markup: ["^(profit|mark[- ]up|interest) (payable|accrued)"]
+  total_current_liabilities: ["^total current liabilities"]
+  total_liabilities_and_equity: ["^total equity and liabilities"]
+  ppe_net: ["^property, plant (and|&) equipment"]
+  intangibles: ["^intangible assets?"]
+  total_noncurrent_assets: ["^total non[- ]current assets"]
+  stores: ["^stores,? spares"]
+  inventory: ["^stock[- ]in[- ]trade", "^inventor(y|ies)"]
+  receivables: ["^trade debts", "^trade receivables"]
+  other_receivables: ["^loans, advances, deposits", "^advances, deposits, prepayments"]
+  short_term_investments: ["^short term investments"]
+  cash: ["^cash and bank balances", "^cash and cash equivalents$"]
+  total_current_assets: ["^total current assets"]
+  total_assets: ["^total assets"]
+
+cash_flow:
+  cfo: ["^net cash (generated|used|from|\\(used in\\) / generated)( from| in)? operating activities$", "^net cash generated from operating activities$", "^cash flows from operating activities$"]
+  capex: ["^(property, plant and equipment purchased|purchase of property, plant|additions to property, plant|capital expenditure|fixed capital expenditure)"]
+  cfi: ["^net cash (used in|generated from|from|\\(used in\\) / generated from) investing activities$", "^cash flows from investing activities$"]
+  dividends_paid: ["^dividends? paid"]
+  cff: ["^net cash (generated from|used in|from|generated from / \\(used in\\)|\\(used in\\) / generated from) financing activities$", "^cash flows from financing activities$"]
+  net_change_cash: ["^net (increase|decrease)", "^net increase / \\(decrease\\) in cash"]
+  cash_end_cf: ["^cash and cash equivalents at the end"]
+  dna_note: ["^-? ?depreciation on property, plant", "^-? ?depreciation$"]
+  amortisation_note: ["^-? ?amorti[sz]ation( of intangible)?"]
+
+identities:
+  # checked after extraction; failures are logged and, where an alternative
+  # source for the same period exists, the value satisfying the identity wins
+  - "gross_profit = revenue + cogs"
+  - "operating_income = gross_profit + distribution + admin + other_opex"
+  - "pretax_income = operating_income + other_income + interest_expense + levy"
+  - "net_income = pretax_income + income_tax"
+  - "total_assets = total_liabilities_and_equity"
