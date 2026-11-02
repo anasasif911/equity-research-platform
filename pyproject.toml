@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eqr"
+version = "0.1.0"
+description = "Autonomous institutional equity research platform: ticker in, research report + valuation model out."
+requires-python = ">=3.11"
+dependencies = [
+  "openpyxl>=3.1",
+  "reportlab>=4.0",
+  "matplotlib>=3.8",
+  "PyYAML>=6.0",
+  "requests>=2.31",
+  "pdfplumber>=0.10",
+  "numpy>=1.26",
+  "anthropic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+eqr = "eqr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

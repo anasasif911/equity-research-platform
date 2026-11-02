@@ -1,0 +1,222 @@
+# Accounting normalization rules: map reported XBRL concepts (US GAAP and
+# IFRS) to the platform's canonical line items. Candidates are tried in
+# order; the first concept with a value for the period wins, and the chosen
+# concept is recorded in provenance. "sum" lists components to add when no
+# direct total is reported. Signs: all canonical values are stored with
+# NATURAL sign (expenses positive, outflows negative in cash flow).
+version: 1
+
+periods:
+  annual_forms: ["10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"]
+  interim_forms: ["10-Q", "10-Q/A", "6-K"]
+  annual_duration_days: [340, 380]
+  quarter_duration_days: [80, 100]
+  prefer: "latest_filed"        # restated values supersede originals; both kept in provenance
+
+income_statement:
+  revenue:
+    us-gaap: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues, SalesRevenueNet, RevenueFromContractWithCustomerIncludingAssessedTax]
+    ifrs-full: [Revenue, RevenueFromContractsWithCustomers]
+  cogs:
+    us-gaap: [CostOfGoodsAndServicesSold, CostOfRevenue, CostOfGoodsSold]
+    ifrs-full: [CostOfSales]
+  gross_profit:
+    us-gaap: [GrossProfit]
+    ifrs-full: [GrossProfit]
+  rnd:
+    us-gaap: [ResearchAndDevelopmentExpense, ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost]
+    ifrs-full: [ResearchAndDevelopmentExpense]
+  sga:
+    us-gaap: [SellingGeneralAndAdministrativeExpense]
+    ifrs-full: [SellingGeneralAndAdministrativeExpense]
+    sum_ifrs-full: [DistributionCosts, AdministrativeExpense]
+  operating_expenses:
+    us-gaap: [OperatingExpenses]
+  operating_income:
+    us-gaap: [OperatingIncomeLoss]
+    ifrs-full: [ProfitLossFromOperatingActivities]
+  interest_expense:
+    us-gaap: [InterestExpense, InterestExpenseNonoperating, InterestExpenseDebt]
+    ifrs-full: [FinanceCosts, InterestExpense]
+  other_income:
+    us-gaap: [NonoperatingIncomeExpense, OtherNonoperatingIncomeExpense]
+  pretax_income:
+    us-gaap: [IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest, IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments]
+    ifrs-full: [ProfitLossBeforeTax]
+  income_tax:
+    us-gaap: [IncomeTaxExpenseBenefit]
+    ifrs-full: [IncomeTaxExpenseContinuingOperations]
+  net_income:
+    us-gaap: [NetIncomeLoss, ProfitLoss]
+    ifrs-full: [ProfitLossAttributableToOwnersOfParent, ProfitLoss]
+  net_income_nci:
+    us-gaap: [NetIncomeLossAttributableToNoncontrollingInterest]
+    ifrs-full: [ProfitLossAttributableToNoncontrollingInterests]
+  eps_diluted:
+    us-gaap: [EarningsPerShareDiluted]
+    ifrs-full: [DilutedEarningsLossPerShare]
+    unit: "USD/shares"
+  shares_diluted_weighted:
+    us-gaap: [WeightedAverageNumberOfDilutedSharesOutstanding]
+    ifrs-full: [WeightedAverageNumberOfSharesOutstandingDiluted]
+    unit: shares
+  shares_basic_weighted:
+    us-gaap: [WeightedAverageNumberOfSharesOutstandingBasic]
+    ifrs-full: [WeightedAverageShares]
+    unit: shares
+  dna:
+    us-gaap: [DepreciationDepletionAndAmortization, DepreciationAmortizationAndAccretionNet, DepreciationAndAmortization]
+    ifrs-full: [DepreciationAndAmortisationExpense]
+  sbc:
+    us-gaap: [ShareBasedCompensation, AllocatedShareBasedCompensationExpense]
+    ifrs-full: [AdjustmentsForSharebasedPayments]
+
+balance_sheet:
+  cash:
+    us-gaap: [CashAndCashEquivalentsAtCarryingValue, CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents]
+    ifrs-full: [CashAndCashEquivalents]
+  short_term_investments:
+    us-gaap: [MarketableSecuritiesCurrent, ShortTermInvestments, AvailableForSaleSecuritiesDebtSecuritiesCurrent]
+    ifrs-full: [CurrentInvestments, OtherCurrentFinancialAssets]
+  receivables:
+    us-gaap: [AccountsReceivableNetCurrent, ReceivablesNetCurrent]
+    ifrs-full: [TradeAndOtherCurrentReceivables, CurrentTradeReceivables]
+  other_receivables:
+    us-gaap: [NontradeReceivablesCurrent, OtherReceivablesNetCurrent]
+  inventory:
+    us-gaap: [InventoryNet]
+    ifrs-full: [Inventories]
+  other_current_assets:
+    us-gaap: [OtherAssetsCurrent, PrepaidExpenseAndOtherAssetsCurrent]
+    ifrs-full: [OtherCurrentAssets]
+  total_current_assets:
+    us-gaap: [AssetsCurrent]
+    ifrs-full: [CurrentAssets]
+  long_term_investments:
+    us-gaap: [MarketableSecuritiesNoncurrent, LongTermInvestments, AvailableForSaleSecuritiesDebtSecuritiesNoncurrent]
+    ifrs-full: [NoncurrentInvestments, OtherNoncurrentFinancialAssets]
+  ppe_net:
+    us-gaap: [PropertyPlantAndEquipmentNet]
+    ifrs-full: [PropertyPlantAndEquipment]
+  goodwill:
+    us-gaap: [Goodwill]
+    ifrs-full: [Goodwill]
+  intangibles:
+    us-gaap: [IntangibleAssetsNetExcludingGoodwill, FiniteLivedIntangibleAssetsNet]
+    ifrs-full: [IntangibleAssetsOtherThanGoodwill]
+  other_noncurrent_assets:
+    us-gaap: [OtherAssetsNoncurrent]
+    ifrs-full: [OtherNoncurrentAssets]
+  total_assets:
+    us-gaap: [Assets]
+    ifrs-full: [Assets]
+  accounts_payable:
+    us-gaap: [AccountsPayableCurrent]
+    ifrs-full: [TradeAndOtherCurrentPayables]
+  deferred_revenue_current:
+    us-gaap: [ContractWithCustomerLiabilityCurrent, DeferredRevenueCurrent]
+  short_term_debt:
+    us-gaap: [CommercialPaper, ShortTermBorrowings, DebtCurrent]
+    ifrs-full: [ShorttermBorrowings, CurrentPortionOfLongtermBorrowings]
+  current_portion_ltd:
+    us-gaap: [LongTermDebtCurrent]
+  other_current_liabilities:
+    us-gaap: [OtherLiabilitiesCurrent]
+    ifrs-full: [OtherCurrentLiabilities]
+  total_current_liabilities:
+    us-gaap: [LiabilitiesCurrent]
+    ifrs-full: [CurrentLiabilities]
+  long_term_debt:
+    us-gaap: [LongTermDebtNoncurrent, LongTermDebtAndCapitalLeaseObligations]
+    ifrs-full: [NoncurrentPortionOfNoncurrentBorrowings, LongtermBorrowings]
+  operating_lease_liabilities:
+    us-gaap: [OperatingLeaseLiability]
+    sum_us-gaap: [OperatingLeaseLiabilityCurrent, OperatingLeaseLiabilityNoncurrent]
+    ifrs-full: [LeaseLiabilities]
+  other_noncurrent_liabilities:
+    us-gaap: [OtherLiabilitiesNoncurrent]
+    ifrs-full: [OtherNoncurrentLiabilities]
+  total_liabilities:
+    us-gaap: [Liabilities]
+    ifrs-full: [Liabilities]
+  total_equity:
+    us-gaap: [StockholdersEquity]
+    ifrs-full: [EquityAttributableToOwnersOfParent]
+  nci:
+    us-gaap: [MinorityInterest]
+    ifrs-full: [NoncontrollingInterests]
+  total_liabilities_and_equity:
+    us-gaap: [LiabilitiesAndStockholdersEquity]
+    ifrs-full: [EquityAndLiabilities]
+  shares_outstanding:
+    dei: [EntityCommonStockSharesOutstanding]
+    us-gaap: [CommonStockSharesOutstanding]
+    unit: shares
+
+cash_flow:
+  cfo:
+    us-gaap: [NetCashProvidedByUsedInOperatingActivities, NetCashProvidedByUsedInOperatingActivitiesContinuingOperations]
+    ifrs-full: [CashFlowsFromUsedInOperatingActivities]
+  capex:
+    us-gaap: [PaymentsToAcquirePropertyPlantAndEquipment, PaymentsToAcquireProductiveAssets]
+    ifrs-full: [PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities]
+    sign: outflow
+  acquisitions:
+    us-gaap: [PaymentsToAcquireBusinessesNetOfCashAcquired]
+    ifrs-full: [CashFlowsUsedInObtainingControlOfSubsidiariesOrOtherBusinessesClassifiedAsInvestingActivities]
+    sign: outflow
+  cfi:
+    us-gaap: [NetCashProvidedByUsedInInvestingActivities, NetCashProvidedByUsedInInvestingActivitiesContinuingOperations]
+    ifrs-full: [CashFlowsFromUsedInInvestingActivities]
+  dividends_paid:
+    us-gaap: [PaymentsOfDividends, PaymentsOfDividendsCommonStock]
+    ifrs-full: [DividendsPaidClassifiedAsFinancingActivities]
+    sign: outflow
+  buybacks:
+    us-gaap: [PaymentsForRepurchaseOfCommonStock]
+    ifrs-full: [PaymentsToAcquireOrRedeemEntitysShares]
+    sign: outflow
+  cff:
+    us-gaap: [NetCashProvidedByUsedInFinancingActivities, NetCashProvidedByUsedInFinancingActivitiesContinuingOperations]
+    ifrs-full: [CashFlowsFromUsedInFinancingActivities]
+  fx_effect:
+    us-gaap: [EffectOfExchangeRateOnCashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents, EffectOfExchangeRateOnCashAndCashEquivalents]
+    ifrs-full: [EffectOfExchangeRateChangesOnCashAndCashEquivalents]
+  cash_end_cf:
+    us-gaap: [CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents, CashAndCashEquivalentsAtCarryingValue]
+    ifrs-full: [CashAndCashEquivalents]
+    instant: true
+  cash_taxes_paid:
+    us-gaap: [IncomeTaxesPaidNet, IncomeTaxesPaid]
+    ifrs-full: [IncomeTaxesPaidRefundClassifiedAsOperatingActivities]
+
+derived:
+  gross_profit_if_missing: "revenue - cogs"
+  ebit: "operating_income"
+  ebitda: "operating_income + dna"
+  total_debt: "short_term_debt + current_portion_ltd + long_term_debt"
+  net_working_capital_operating: "receivables + other_receivables + inventory + other_current_assets - accounts_payable - deferred_revenue_current - other_current_liabilities"
+  fcff_reported_basis: "cfo - capex + interest_expense*(1-tax_rate)"
+  fcfe_simple: "cfo - capex"
+
+normalization_bridge:
+  # Items adjusted from reported to normalized operating profit. Each
+  # adjustment needs a tagged, sourced amount; nothing is estimated.
+  candidates:
+    - {concept: "us-gaap:RestructuringCharges", treatment: add_back, label: "Restructuring charges"}
+    - {concept: "us-gaap:GoodwillImpairmentLoss", treatment: add_back, label: "Goodwill impairment"}
+    - {concept: "us-gaap:AssetImpairmentCharges", treatment: add_back, label: "Asset impairment"}
+    - {concept: "us-gaap:GainLossOnSaleOfPropertyPlantEquipment", treatment: remove, label: "Gain/loss on asset sales"}
+    - {concept: "us-gaap:BusinessCombinationAcquisitionRelatedCosts", treatment: add_back, label: "Acquisition-related costs"}
+  one_off_tax:
+    - {concept: "us-gaap:IncomeTaxReconciliationTaxSettlements", label: "Tax settlements"}
+  sbc_policy: >
+    Stock-based compensation is treated as a REAL operating expense (not added
+    back). Dilution from future grants is therefore NOT also modelled through
+    share count growth beyond net buyback assumptions, to avoid double counting.
+  lease_policy: >
+    Operating lease liabilities (ASC 842 / IFRS 16) are treated consistently:
+    under US GAAP operating-lease cost sits inside operating expenses, so lease
+    liabilities are NOT deducted as debt in the EV-to-equity bridge (they are
+    shown as a memo line). Under IFRS 16 lease liabilities ARE treated as debt
+    because lease cost is below EBITDA.

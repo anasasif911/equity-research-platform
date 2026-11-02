@@ -1,0 +1,43 @@
+# Generic research plan template. eqr.plan merges this with the sector
+# playbook to produce a company-specific plan (runs/<id>/work/research_plan.json)
+# whose coverage items are tracked through the run (status: open / evidenced /
+# partially_evidenced / gap). Coverage is decision-relevant, not exhaustive.
+version: 1
+
+coverage:
+  business:
+    - {id: B1, question: "What does the company sell, to whom, where, and how does it get paid?", evidence: [annual_report_business_section, segment_note], priority: high}
+    - {id: B2, question: "Segment and geographic economics: growth and margin by segment", evidence: [segment_note], priority: high}
+    - {id: B3, question: "Competitive position: share, pricing power, switching costs, substitutes", evidence: [annual_report_competition, industry_data], priority: high}
+    - {id: B4, question: "Customer and supplier concentration and dependencies", evidence: [risk_factors, concentration_disclosure], priority: medium}
+    - {id: B5, question: "Operating KPIs and unit economics (sector-specific list)", evidence: [kpi_disclosure], priority: high}
+    - {id: B6, question: "Management execution, governance, ownership, incentives, capital allocation", evidence: [proxy_statement, insider_filings, cash_flow_history], priority: medium}
+  industry:
+    - {id: I1, question: "Market structure, cycle position, supply/demand and capacity", evidence: [industry_data], priority: medium}
+    - {id: I2, question: "Competitors, disruptive technologies, barriers to entry, profit pools", evidence: [industry_data, peer_filings], priority: medium}
+    - {id: I3, question: "Input-cost exposures (commodities, freight, labour, energy, financing)", evidence: [risk_factors, mdna], priority: medium}
+  financial_quality:
+    - {id: F1, question: "Five+ years of IS/BS/CF reconciled to filings", evidence: [xbrl_financials], priority: critical}
+    - {id: F2, question: "Organic vs acquired growth", evidence: [acquisition_cash_flows, mdna], priority: medium}
+    - {id: F3, question: "Margin quality, cash conversion, accruals, working capital", evidence: [xbrl_financials], priority: high}
+    - {id: F4, question: "Maintenance vs growth investment", evidence: [xbrl_financials, mdna], priority: medium}
+    - {id: F5, question: "Accounting policy changes, restatements, non-recurring items, related parties, contingencies", evidence: [xbrl_financials, notes], priority: high}
+    - {id: F6, question: "Debt terms, maturities, liquidity, leases, pensions, SBC and dilution", evidence: [debt_note, lease_note, xbrl_financials], priority: high}
+  macro_political:
+    - {id: M1, question: "Rates, inflation, FX and demand sensitivity with transmission mechanism", evidence: [risk_factors, official_macro_data], priority: medium}
+    - {id: M2, question: "Tax, tariffs, sanctions, export controls, regulation, litigation", evidence: [risk_factors, legal_proceedings], priority: high}
+    - {id: M3, question: "Country / geopolitical exposure where material", evidence: [segment_geography, risk_factors], priority: medium}
+  market_expectations:
+    - {id: X1, question: "Current valuation vs history and peers", evidence: [market_price, peer_market_data], priority: high}
+    - {id: X2, question: "What growth/margins does the price imply (reverse DCF)?", evidence: [market_price, model], priority: critical}
+    - {id: X3, question: "Sourced, dated consensus (only if accessible)", evidence: [consensus_source], priority: low}
+    - {id: X4, question: "Short interest, insider transactions, ownership, positioning", evidence: [insider_filings, ownership_filings], priority: low}
+
+transmission_template: "event/exposure -> operational effect -> financial line item -> valuation implication"
+
+impact_matrix_fields: [factor, category, materiality, evidence_strength, probability, timeframe, transmission, model_variables, monitoring_indicators, evidence_ids]
+
+stopping_rules:
+  - "Stop retrieval when every critical/high coverage item is evidenced or recorded as a gap with the attempted sources."
+  - "Hard budget limits in config (max_fetches, max_minutes, max_llm_calls, max_cost_usd) always stop the run with a checkpoint."
+  - "Never repeat an identical failed request more than retry.max_attempts times."

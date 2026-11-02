@@ -1,0 +1,20 @@
+# SIC code ranges -> sector playbook. First match wins. Non-SEC listings can
+# pass --sector explicitly or are mapped via the issuer's stated industry.
+version: 1
+mapping:
+  - {sic: [3570, 3579], playbook: technology_hardware}
+  - {sic: [3674, 3674], playbook: semiconductors}
+  - {sic: [3600, 3699], playbook: technology_hardware}
+  - {sic: [7370, 7379], playbook: software_internet}
+  - {sic: [6020, 6099], playbook: banks}
+  - {sic: [6300, 6411], playbook: insurance}
+  - {sic: [6798, 6798], playbook: reits}
+  - {sic: [1000, 1499], playbook: resources}
+  - {sic: [2911, 2911], playbook: resources}
+  - {sic: [2833, 2836], playbook: pharma_biotech}
+  - {sic: [2000, 2399], playbook: consumer_staples}
+  - {sic: [5200, 5999], playbook: retail}
+  - {sic: [4900, 4991], playbook: utilities}
+  - {sic: [4800, 4899], playbook: telecom}
+  - {sic: [6700, 6799], playbook: holding_company}
+default: general

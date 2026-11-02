@@ -1,0 +1,8 @@
+id: retail
+archetype: mature_cash_generator
+kpis: [same_store_sales, store_count, sales_per_sqft, inventory_turns, gross_margin, ebit_margin]
+key_questions: ["Comparable-sales drivers", "Inventory health", "E-commerce channel economics"]
+exposures:
+  - {factor: "Consumer spending", category: macro, transmission: "real income squeeze -> traffic/ticket -> comps -> deleveraging", model_variables: [revenue_growth, operating_margin], monitoring: ["retail sales data"]}
+scenario_overrides: {}
+peers_hint: []

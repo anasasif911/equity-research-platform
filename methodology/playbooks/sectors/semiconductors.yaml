@@ -1,0 +1,9 @@
+id: semiconductors
+archetype: cyclical
+kpis: [revenue_growth, gross_margin, inventory_days, capex_pct_revenue, rnd_pct_revenue, book_to_bill_if_disclosed]
+key_questions: ["Cycle position: inventory days at customers and company", "Export-control exposure", "Node leadership and capacity"]
+exposures:
+  - {factor: "Export controls", category: political, transmission: "license restrictions -> lost China revenue -> growth", model_variables: [revenue_growth], monitoring: ["BIS rules"]}
+  - {factor: "Inventory cycle", category: industry, transmission: "channel destocking -> volumes and utilisation -> gross margin", model_variables: [revenue_growth, operating_margin], monitoring: ["inventory days"]}
+scenario_overrides: {bear: {revenue_growth_delta: -0.08, margin_delta: -0.05}}
+peers_hint: []

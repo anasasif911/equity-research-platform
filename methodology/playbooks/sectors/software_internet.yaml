@@ -1,0 +1,12 @@
+id: software_internet
+archetype: mature_cash_generator
+kpis: [revenue_growth, gross_margin, ebit_margin, rnd_pct_revenue, sbc_pct_revenue, deferred_revenue_growth, fcf_margin, net_retention_if_disclosed]
+key_questions:
+  - "Durability of growth: net retention, cohort behaviour, pricing"
+  - "SBC as a real cost: FCF after SBC and dilution"
+  - "Capital intensity shift from AI/data-centre capex"
+exposures:
+  - {factor: "AI capex cycle", category: competitive, transmission: "rising data-centre investment -> capex and D&A -> FCFF and ROIC", model_variables: [capex_pct_revenue, operating_margin], monitoring: ["capex guidance"]}
+  - {factor: "Antitrust / privacy regulation", category: regulatory, transmission: "remedies or fines -> revenue model changes -> growth/margin", model_variables: [revenue_growth, operating_margin], monitoring: ["DOJ/EC case dockets"]}
+scenario_overrides: {}
+peers_hint: []

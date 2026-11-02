@@ -1,0 +1,21 @@
+id: technology_hardware
+archetype: mature_cash_generator
+description: "Consumer and enterprise hardware with attached software/services ecosystems."
+kpis: [revenue_growth, products_vs_services_mix, gross_margin_products, gross_margin_services, rnd_pct_revenue, installed_base_proxy, capex_pct_revenue, nwc_pct_revenue, net_cash, buyback_yield]
+key_questions:
+  - "How much of value rests on high-margin services monetising an installed base vs. hardware unit cycles?"
+  - "Pricing power: can ASP increases offset unit saturation?"
+  - "Supply-chain concentration (assembly geography, single-source components) and tariff exposure"
+  - "Regulatory pressure on platform/app-store economics and default-search payments"
+  - "Capital return capacity: buybacks vs. net cash trajectory"
+exposures:
+  - {factor: "Tariffs / trade policy on assembled hardware", category: political, transmission: "tariff on imports -> higher landed cost or price increases -> products gross margin / units -> EBIT margin and FCFF", model_variables: [operating_margin, revenue_growth], monitoring: ["USTR tariff actions", "company gross-margin guidance"]}
+  - {factor: "China demand and supply-chain concentration", category: geopolitical, transmission: "disruption or demand loss in Greater China -> segment revenue and production capacity -> revenue growth / margin", model_variables: [revenue_growth, operating_margin], monitoring: ["Greater China segment revenue", "export-control announcements"]}
+  - {factor: "Platform regulation (app stores, default search, interoperability)", category: regulatory, transmission: "rulings/legislation -> lower commission rates or licensing income -> services revenue and margin", model_variables: [revenue_growth, operating_margin], monitoring: ["EU DMA decisions", "US antitrust remedies"]}
+  - {factor: "Component costs (memory, advanced nodes)", category: input_cost, transmission: "component price increases -> COGS -> gross margin", model_variables: [operating_margin], monitoring: ["DRAM/NAND contract prices"]}
+  - {factor: "FX (USD strength)", category: macro, transmission: "stronger USD -> lower translated international revenue -> revenue growth; partial hedging", model_variables: [revenue_growth], monitoring: ["DXY", "hedging disclosures"]}
+  - {factor: "Product cycle / AI feature adoption", category: competitive, transmission: "upgrade cycle strength -> unit volumes and ASP -> revenue growth", model_variables: [revenue_growth], monitoring: ["segment revenue", "replacement cycle commentary"]}
+scenario_overrides:
+  bear: {revenue_growth_delta: -0.035, margin_delta: -0.025}
+  stress: {revenue_growth_delta: -0.10, revenue_shock_years: 2, margin_delta: -0.05, wacc_delta: 0.01, terminal_g_delta: -0.01}
+peers_hint: [MSFT, GOOGL, AMZN, META, DELL, HPQ, SONY]

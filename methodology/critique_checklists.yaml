@@ -1,0 +1,38 @@
+# Independent critique passes. Deterministic critics (code) inspect numbers
+# and evidence; the model critic (when configured) inspects the narrative
+# against the evidence pack. Critics must cite the specific number, cell, or
+# evidence id they challenge; generic praise is discarded.
+version: 1
+
+passes:
+  thesis:
+    checks:
+      - "Every thesis pillar cites >= 1 evidence id or is labelled as interpretation"
+      - "Variant perception is stated relative to what is priced in (reverse DCF), not relative to a strawman"
+      - "Counter-thesis is substantive and evaluated with evidence"
+      - "Catalysts have timing and dependency; undated catalysts are flagged"
+  accounting_model:
+    checks:
+      - "BS identity, CF reconciliation, subtotal checks (from gates)"
+      - "Forecast margins vs history: flag > 2 standard deviations from 5y mean"
+      - "Capex vs D&A: flag terminal capex < D&A with positive growth"
+      - "SBC treatment consistent (expense, no add-back) and dilution not double counted"
+      - "Tax rate within statutory +/- 10pp"
+  valuation:
+    checks:
+      - "Terminal value share of EV (warn > 80%)"
+      - "Terminal g <= risk-free rate"
+      - "Implied terminal EV/EBITDA and P/E vs peers/history"
+      - "Terminal RONIC vs WACC consistent with moat evidence"
+      - "WACC components dated and sourced"
+      - "Valuation range spans scenario outcomes; no false precision"
+  citations:
+    checks:
+      - "Every historical figure in the report maps to a fact with accession/URL"
+      - "Every market input has source + timestamp"
+      - "No citation to a source not present in the source register"
+  presentation:
+    checks:
+      - "Report numbers equal workbook values"
+      - "Units, currency and dates stated on every table"
+      - "No placeholder text; no clipped tables"

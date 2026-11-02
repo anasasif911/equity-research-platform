@@ -1,0 +1,39 @@
+# Quality gates. severity: critical gates block the FINAL/VALIDATED label;
+# major gates downgrade to QUALIFIED; minor gates are informational.
+# Status vocabulary: VERIFIED (passed with evidence), QUALIFIED (passed with a
+# disclosed limitation), FAILED, NOT_RUN (could not be executed - never shown
+# as passed).
+version: 1
+
+tolerances:
+  balance_sheet_identity_rel: 0.001     # |A - (L+E)| / A
+  cash_flow_reconciliation_rel: 0.01    # |CFO+CFI+CFF+FX - dCash| / |CFO|
+  subtotal_rel: 0.005
+  workbook_vs_engine_rel: 0.0005
+  report_vs_workbook_abs_per_share: 0.01
+
+gates:
+  - {id: G01, name: "Security resolved unambiguously", severity: critical}
+  - {id: G02, name: "Historical financials traceable to tier-1 sources", severity: critical}
+  - {id: G03, name: "Historical coverage >= 5 fiscal years (or all available, disclosed)", severity: major}
+  - {id: G04, name: "Balance-sheet identity holds in every historical year", severity: critical}
+  - {id: G05, name: "Cash-flow statement reconciles to change in cash", severity: major}
+  - {id: G06, name: "Income-statement subtotals consistent", severity: major}
+  - {id: G07, name: "Forecast balance sheet balances / schedules consistent", severity: critical}
+  - {id: G08, name: "Enterprise-to-equity bridge and share count reconcile", severity: critical}
+  - {id: G09, name: "Critical market inputs sourced, dated and fresh", severity: critical}
+  - {id: G10, name: "Valuation sanity (TV share, implied multiples, terminal ROIC, g < rf)", severity: major}
+  - {id: G11, name: "Sensitivity directions economically consistent", severity: major}
+  - {id: G12, name: "Workbook recalculated by an independent engine and matches engine", severity: critical}
+  - {id: G13, name: "Workbook free of formula errors", severity: critical}
+  - {id: G14, name: "Report numbers match workbook", severity: critical}
+  - {id: G15, name: "Source register complete; every material input cited", severity: major}
+  - {id: G16, name: "Stale-data flags reviewed", severity: minor}
+  - {id: G17, name: "Rendered PDFs and representative sheets visually inspected", severity: major}
+  - {id: G18, name: "Independent critique completed and findings resolved or disclosed", severity: major}
+  - {id: G19, name: "Qualitative synthesis performed by an inference model with cited evidence", severity: major}
+
+labels:
+  FINAL_VALIDATED: "all critical and major gates VERIFIED or QUALIFIED with no FAILED critical gate"
+  DRAFT_QUALIFIED: "no critical FAILED, but >=1 major FAILED or NOT_RUN"
+  BLOCKED_PARTIAL: "any critical gate FAILED or NOT_RUN: outputs preserved and labelled, conclusion withheld"

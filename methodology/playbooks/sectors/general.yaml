@@ -1,0 +1,12 @@
+id: general
+archetype: mature_cash_generator
+kpis: [revenue_growth, gross_margin, ebit_margin, fcf_conversion, roic, nwc_pct_revenue, capex_pct_revenue]
+key_questions:
+  - "What drives volume and price, and which is more durable?"
+  - "Is return on invested capital above the cost of capital, and why?"
+exposures:
+  - {factor: "Demand cyclicality", category: macro, transmission: "GDP/consumer slowdown -> lower volumes -> revenue and operating leverage -> lower FCFF", model_variables: [revenue_growth, operating_margin], monitoring: ["company guidance", "industry orders"]}
+  - {factor: "Interest rates", category: macro, transmission: "higher real rates -> higher discount rate -> lower PV of long-duration cash flows", model_variables: [wacc], monitoring: ["10y Treasury yield"]}
+  - {factor: "FX translation", category: macro, transmission: "stronger reporting currency -> lower translated foreign revenue -> revenue growth", model_variables: [revenue_growth], monitoring: ["trade-weighted currency index"]}
+scenario_overrides: {}
+peers_hint: []

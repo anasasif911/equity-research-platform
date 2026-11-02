@@ -1,0 +1,9 @@
+id: pharma_biotech
+archetype: mature_cash_generator
+note: "Pre-revenue biotech requires rNPV by asset with sourced probabilities of success; the platform reports 'no defensible valuation' if rNPV inputs are not sourced."
+kpis: [revenue_by_product, patent_expiry_schedule, pipeline_phase_counts, rnd_pct_revenue, gross_margin]
+key_questions: ["Loss-of-exclusivity cliff", "Pipeline replacement", "Pricing regulation (e.g., IRA negotiation)"]
+exposures:
+  - {factor: "Drug-pricing regulation", category: regulatory, transmission: "negotiated prices -> net price -> revenue", model_variables: [revenue_growth], monitoring: ["CMS negotiation lists"]}
+scenario_overrides: {}
+implemented_frameworks: [fcff_dcf]

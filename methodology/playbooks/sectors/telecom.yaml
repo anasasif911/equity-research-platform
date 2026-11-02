@@ -1,0 +1,7 @@
+id: telecom
+archetype: mature_cash_generator
+kpis: [subscribers, arpu, churn, capex_intensity, net_debt_to_ebitda, spectrum_obligations]
+key_questions: ["ARPU vs churn trade-off", "Capex cycle (5G/fibre)", "Leverage and dividend coverage"]
+exposures: []
+scenario_overrides: {}
+peers_hint: []

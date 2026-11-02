@@ -1,0 +1,8 @@
+id: consumer_staples
+archetype: mature_cash_generator
+kpis: [organic_growth, price_mix, volume, gross_margin, advertising_pct_revenue, nwc_pct_revenue]
+key_questions: ["Price/mix vs volume", "Input-cost pass-through lag", "Private-label pressure"]
+exposures:
+  - {factor: "Agricultural / packaging input costs", category: input_cost, transmission: "input inflation -> COGS -> gross margin until pricing catches up", model_variables: [operating_margin], monitoring: ["commodity indices"]}
+scenario_overrides: {}
+peers_hint: []

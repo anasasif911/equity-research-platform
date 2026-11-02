@@ -1,0 +1,9 @@
+id: insurance
+archetype: insurer
+note: "Use residual income on book (or embedded value where disclosed), combined ratio and investment yield drivers; not industrial FCFF."
+kpis: [combined_ratio, premium_growth, investment_yield, reserve_development, solvency_ratio, roe]
+key_questions: ["Underwriting discipline through the cycle", "Reserve adequacy", "Catastrophe exposure"]
+exposures:
+  - {factor: "Catastrophe losses", category: physical_climate, transmission: "cat events -> claims -> combined ratio -> earnings/capital", model_variables: [roe], monitoring: ["cat loss estimates"]}
+scenario_overrides: {}
+implemented_frameworks: [residual_income, ddm]

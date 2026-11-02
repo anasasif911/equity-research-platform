@@ -1,0 +1,9 @@
+id: resources
+archetype: resource
+note: "Primary: resource NAV over reserve life at strip/long-term deck prices (sourced). DCF on mid-cycle prices as cross-check."
+kpis: [production_volume, realised_price, cash_cost_per_unit, reserve_life, capex_sustaining, net_debt_to_ebitda]
+key_questions: ["Cost-curve position", "Reserve life and replacement", "Commodity price deck sensitivity"]
+exposures:
+  - {factor: "Commodity price", category: commodity, transmission: "price change -> realised price -> revenue and margin (high operating leverage)", model_variables: [revenue_growth, operating_margin], monitoring: ["benchmark price strip"]}
+scenario_overrides: {bear: {revenue_growth_delta: -0.15, margin_delta: -0.10}}
+implemented_frameworks: [fcff_dcf]

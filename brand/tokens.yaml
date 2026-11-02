@@ -1,0 +1,52 @@
+# Signature visual identity: black / white / muted metallic gold.
+#
+# PROVENANCE (recorded honestly): no existing brand tokens, fonts, templates or
+# style files were found in this repository, the user's connected GitHub
+# repository (anasasif911/Technical-analysis-agent-PSX, empty at inspection on
+# 2026-11-02) or a Google Drive search for brand/theme/palette files.
+# These tokens are therefore a RESTRAINED FALLBACK created to match the stated
+# "black, white and gold" theme. Replace values here to apply the true house
+# style; every renderer reads only this file.
+status: fallback            # fallback | official
+recorded: "2026-11-02"
+
+color:
+  ink: "#0B0B0C"            # near-black: headings, primary text, table rules
+  paper: "#FFFFFF"          # page background
+  gold: "#A8875A"           # muted metallic gold: sparing emphasis only
+  gold_light: "#E9DFCC"     # tint for highlighted cells / band fills
+  gold_dark: "#7A6040"      # gold for text on white where contrast is needed
+  grey_900: "#2A2A2D"
+  grey_600: "#5E5E63"       # secondary text, source notes
+  grey_300: "#C9C9CC"       # hairlines
+  grey_100: "#F3F3F4"       # zebra rows / input-cell fill
+  positive: "#2F5D3A"       # restrained green for check PASS
+  negative: "#8A2B2B"       # restrained red for check FAIL / downside
+  input_blue: "#1F3A93"     # Excel convention: hard-coded inputs in blue font
+
+# Ordered chart palette: ink first, gold for the focal series, greys for context.
+chart_series: ["#0B0B0C", "#A8875A", "#8C8C91", "#C9C9CC", "#7A6040", "#5E5E63"]
+
+font:
+  # Fonts verified installed in the build environment; renderers fall back to
+  # Helvetica/Times built into reportlab when a file is missing.
+  heading: "Inter"                 # Inter SemiBold / Bold
+  body: "Inter"
+  serif_display: "DejaVu Serif"    # cover title only
+  mono: "DejaVu Sans Mono"
+  excel: "Calibri"                 # universally available in Excel
+
+type_scale_pt: {cover: 26, h1: 16, h2: 12, h3: 10, body: 9, small: 7.5, table: 7.8}
+
+layout:
+  page: "A4"
+  margin_mm: {top: 18, bottom: 18, left: 18, right: 18}
+  rule_weight_pt: 0.6
+  gold_rule_weight_pt: 1.4
+
+number_format:
+  millions: '#,##0;(#,##0);"–"'
+  millions_1dp: '#,##0.0;(#,##0.0);"–"'
+  per_share: '#,##0.00;(#,##0.00);"–"'
+  percent: '0.0%;(0.0%);"–"'
+  multiple: '0.0"x"'

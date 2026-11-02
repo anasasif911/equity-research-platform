@@ -1,0 +1,91 @@
+# Valuation-method selection rules. eqr.valuation.selector evaluates every
+# method against the company archetype and data availability, and records
+# SELECTED / REJECTED with the reason. Methods are never mechanically averaged:
+# weights below are reliability weights applied only to SELECTED methods,
+# re-normalised, and always disclosed.
+version: 1
+
+methods:
+  fcff_dcf:
+    label: "FCFF discounted cash flow (enterprise)"
+    requires: [historical_financials, market_price, risk_free_rate, equity_risk_premium, beta]
+    unsuitable_archetypes: [bank, insurer, pre_revenue]
+    rationale: "Values operating assets from unlevered cash flows; preferred where capital structure is separable from operations."
+  fcfe_dcf:
+    label: "FCFE discounted cash flow"
+    requires: [historical_financials, risk_free_rate, equity_risk_premium, beta]
+    unsuitable_archetypes: [pre_revenue]
+    rationale: "Useful when leverage is stable or operations and financing are inseparable."
+  ddm:
+    label: "Dividend discount model"
+    requires: [dividend_history, risk_free_rate, equity_risk_premium, beta]
+    condition: "payout_ratio_5y between 0.3 and 1.0 and dividends paid in each of last 5 years"
+    rationale: "Appropriate for stable distributors and regulated financials; misleading where buybacks dominate distributions."
+  residual_income:
+    label: "Residual income / excess return on equity"
+    requires: [book_value, roe_history, risk_free_rate, equity_risk_premium, beta]
+    preferred_archetypes: [bank, insurer]
+    rationale: "Anchors value on book equity; preferred for financials where debt is operating raw material."
+  trading_comps:
+    label: "Trading comparables"
+    requires: [peer_set_with_market_data]
+    rationale: "Market cross-check of relative pricing; requires >=3 sufficiently comparable peers with dated market data."
+  sotp:
+    label: "Sum-of-the-parts"
+    requires: [segment_profit_disclosure]
+    condition: "segments with materially different economics and disclosed segment operating profit"
+  nav:
+    label: "NAV / adjusted asset value"
+    preferred_archetypes: [reit, holding_company, resource]
+  reverse_dcf:
+    label: "Reverse DCF (implied expectations)"
+    requires: [market_price, fcff_dcf]
+    always_when_price_available: true
+    rationale: "States what the current price requires; diagnostic, carries no weight in value."
+  precedent_transactions:
+    label: "Precedent transactions"
+    requires: [public_transaction_set]
+    rationale: "Only when sufficiently comparable public deal data exist; rarely defensible for mega-caps."
+  liquidation:
+    label: "Liquidation / recovery"
+    preferred_archetypes: [distressed]
+  ffo_affo:
+    label: "FFO / AFFO multiples and NAV"
+    preferred_archetypes: [reit]
+  rnpv:
+    label: "Risk-adjusted NPV"
+    preferred_archetypes: [pre_revenue_biotech]
+
+# Reliability weights by archetype (only selected methods are used, then renormalised).
+weights:
+  default:          {fcff_dcf: 0.70, trading_comps: 0.30, ddm: 0.0, fcfe_dcf: 0.0, residual_income: 0.0, sotp: 0.0}
+  mature_cash_generator: {fcff_dcf: 0.70, trading_comps: 0.30}
+  bank:             {residual_income: 0.60, ddm: 0.20, trading_comps: 0.20}
+  insurer:          {residual_income: 0.60, ddm: 0.20, trading_comps: 0.20}
+  reit:             {nav: 0.50, ffo_affo: 0.30, ddm: 0.20}
+  resource:         {nav: 0.60, fcff_dcf: 0.25, trading_comps: 0.15}
+  holding_company:  {nav: 0.70, trading_comps: 0.30}
+  distressed:       {liquidation: 0.60, fcff_dcf: 0.40}
+  pre_revenue:      {rnpv: 0.80, trading_comps: 0.20}
+
+no_defensible_valuation_when:
+  - "historical_financials missing or failing reconciliation"
+  - "no method selected whose required inputs are all sourced"
+  - "archetype requires a specialist framework that is not implemented and no generic method is suitable"
+
+dcf_policy:
+  discounting: "mid-year convention; valuation date = run cutoff date; stub-period discount to first fiscal year end"
+  terminal_method: "Gordon growth on FCFF with value-driver reinvestment: FCFF_T+1 = NOPAT_T+1 x (1 - g / RONIC)"
+  terminal_growth_cap: "must not exceed long-run nominal risk-free rate; default <= 3.0% for USD"
+  terminal_ronic_default: "WACC + spread decaying toward WACC; justify any persistent excess return with moat evidence"
+  tv_share_warning: 0.80        # TV/EV above this triggers a critique finding
+  implied_exit_multiple_check: true
+  sensitivity_grid: {wacc_step: 0.005, g_step: 0.005, size: 5}
+
+price_target_policy: >
+  Present intrinsic value (as of the valuation date) is distinguished from a
+  12-month price target. Target = intrinsic value x (1 + cost of equity) -
+  expected dividends per share over the horizon. Both are reported with the
+  bridge. Ratings use the expected total return versus cost of equity:
+  BUY if > ke + 10pp, SELL if < ke - 10pp, otherwise HOLD; "NO RATING" when
+  confidence is LOW or a critical gate fails.

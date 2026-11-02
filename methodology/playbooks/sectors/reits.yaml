@@ -1,0 +1,9 @@
+id: reits
+archetype: reit
+note: "Primary frameworks: NAV (cap-rate based), FFO/AFFO multiples, DDM. FCFF DCF only as cross-check."
+kpis: [occupancy, same_store_noi_growth, ffo_per_share, affo_per_share, ltv, wale]
+key_questions: ["Cap-rate vs financing-cost spread", "Lease expiry profile", "Development pipeline funding"]
+exposures:
+  - {factor: "Cap-rate expansion", category: macro, transmission: "higher real rates -> higher cap rates -> lower NAV", model_variables: [nav], monitoring: ["transaction cap rates"]}
+scenario_overrides: {}
+implemented_frameworks: []

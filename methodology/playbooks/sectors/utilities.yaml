@@ -1,0 +1,9 @@
+id: utilities
+archetype: mature_cash_generator
+note: "Regulated asset base x allowed return drives earnings; DDM and RAB-based valuation are primary."
+kpis: [rate_base_growth, allowed_roe, earned_roe, capex_plan, ffo_to_debt]
+key_questions: ["Regulatory lag", "Capex funding and equity issuance"]
+exposures:
+  - {factor: "Rate cases", category: regulatory, transmission: "allowed ROE decisions -> earned return -> EPS", model_variables: [operating_margin], monitoring: ["commission dockets"]}
+scenario_overrides: {}
+implemented_frameworks: [fcff_dcf, ddm]

@@ -1,0 +1,33 @@
+# Cost-of-capital methodology. Market inputs MUST be sourced and dated;
+# nothing here is a market observation.
+version: 1
+
+risk_free:
+  USD: {source: "US Treasury daily par yield curve, 10-year constant maturity", adapter: treasury_par_curve, tenor: "10 Yr"}
+  other: "local-currency 10y government yield from central bank/statistical source; if sovereign is not default-free, subtract the sovereign default spread (sourced)"
+
+equity_risk_premium:
+  preferred: "Damodaran implied ERP for the S&P 500 (monthly update, NYU Stern) for mature markets"
+  country_risk: "add sourced country risk premium x lambda (default lambda = 1 for domestic-revenue firms) for non-mature markets"
+  fallback: "user-supplied sourced value via evidence inbox; otherwise the cost-of-capital gate FAILS"
+
+beta:
+  method: "OLS regression of monthly total-price returns vs. local broad-market index over 60 months (minimum 36)"
+  adjustment: "Blume: 0.67 x raw + 0.33 x 1.0"
+  benchmark: {US: "SPY.US (S&P 500 ETF) via Stooq", DEFAULT: "local broad index"}
+  cross_check: "compare with sector-unlevered beta re-levered at target D/E when peers available"
+  bounds_warning: [0.4, 2.2]
+
+cost_of_debt:
+  preferred: "pre-tax yield on traded debt (sourced)"
+  secondary: "effective interest rate = interest expense / average gross debt (from filings)"
+  fallback: "risk-free + analyst-assumed credit spread (explicitly labelled assumption; gate QUALIFIED)"
+  default_spread_assumption: 0.010
+
+weights: "market value of equity (price x diluted shares) and book value of gross debt as proxy for market value (disclosed)"
+
+circularity: >
+  No iterative spreadsheet calculation is used. WACC uses current market-value
+  weights (not forecast-year weights), so there is no circular reference.
+  Interest income on cash is computed on OPENING cash balances, which also
+  removes the interest-cash circularity.

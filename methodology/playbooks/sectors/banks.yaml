@@ -1,0 +1,10 @@
+id: banks
+archetype: bank
+note: "Industrial FCFF DCF is REJECTED for banks: debt is operating raw material. Use residual income (ROE vs cost of equity on book value), DDM and P/B vs ROE comps."
+kpis: [net_interest_margin, loan_growth, deposit_growth, cost_income_ratio, cost_of_risk, npl_ratio, cet1_ratio, roe, rote, payout_ratio]
+key_questions: ["Sustainable ROE vs cost of equity", "Capital surplus/deficit vs regulatory minimum", "Deposit beta and rate sensitivity", "Asset quality cycle"]
+exposures:
+  - {factor: "Policy rate path", category: macro, transmission: "rate cuts -> asset yields reprice faster than deposits -> NIM -> ROE", model_variables: [roe], monitoring: ["central bank decisions"]}
+  - {factor: "Credit cycle", category: macro, transmission: "unemployment up -> defaults -> provisions -> earnings and capital", model_variables: [roe, book_value_growth], monitoring: ["NPL ratio"]}
+scenario_overrides: {}
+implemented_frameworks: [residual_income, ddm]

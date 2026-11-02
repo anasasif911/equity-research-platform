@@ -1,0 +1,8 @@
+id: holding_company
+archetype: holding_company
+note: "NAV / sum-of-the-parts of listed and unlisted holdings with a justified holding-company discount."
+kpis: [nav_per_share, discount_to_nav, look_through_earnings]
+key_questions: ["Capital allocation track record", "Discount drivers: governance, tax leakage, costs"]
+exposures: []
+scenario_overrides: {}
+implemented_frameworks: []
