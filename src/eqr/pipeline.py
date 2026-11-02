@@ -65,7 +65,13 @@ class Pipeline:
             log.info("== stage: %s", stage)
             st.mark(stage, "running")
             try:
-                getattr(self, f"s_{stage}")()
+                try:
+                    getattr(self, f"s_{stage}")()
+                except SourceUnavailable as e:
+                    raise Paused(AWAITING_EVIDENCE,
+                                 f"Critical source unavailable ({e.reason}): {e.url}. Allow the host in the environment's network "
+                                 f"policy or place the document in the evidence inbox, then `eqr resume`.",
+                                 {"requests": self.store.blocked_requests(critical_only=True)}) from e
                 st.mark(stage, COMPLETE)
                 st.event(stage, "complete")
             except Paused as p:
