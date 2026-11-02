@@ -12,7 +12,8 @@ from .evidence import EvidenceStore, SourceUnavailable
 
 TREASURY_CSV = ("https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/"
                 "{year}/all?type=daily_treasury_yield_curve&field_tdr_date_value={year}&page&_format=csv")
-DAMODARAN_HOME = "https://pages.stern.nyu.edu/~adamodar/"
+# The site root is a frameset; the ERP statement lives on the inner home page.
+DAMODARAN_HOME = "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/home.htm"
 
 
 def parse_treasury_csv(data: bytes, cutoff: dt.date, tenor: str = "10 Yr") -> dict:

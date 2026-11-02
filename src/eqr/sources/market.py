@@ -67,7 +67,11 @@ def price_history(store: EvidenceStore, ticker: str, *, monthly: bool, critical:
             ev.period = parsed["series"][-1]["date"] if parsed["series"] else None
             store.save()
             return parsed, ev.id
-        except (SourceUnavailable, ValueError, KeyError, IndexError, TypeError):
+        except SourceUnavailable:
+            continue
+        except (ValueError, KeyError, IndexError, TypeError) as e:
+            store.mark_invalid(url, "market_prices", f"content failed validation ({type(e).__name__}): not price data "
+                                                     f"(e.g. a bot-check page); not used")
             continue
     return None
 

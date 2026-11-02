@@ -181,8 +181,9 @@ class Pipeline:
             parsed, pev = px
             mi["price"] = {"value": parsed["price"], "time": parsed["price_time"], "currency": parsed["currency"],
                            "evidence_id": pev, "source": self.store.get(pev).publisher}
-        stock_m = market.price_history(self.store, tk, monthly=True, critical=True, label="Beta")
-        bench_m = market.price_history(self.store, "SPY", monthly=True, critical=True, label="Benchmark (S&P 500 ETF)")
+        # beta uses month-end observations of the daily histories (one request per security)
+        stock_m = px
+        bench_m = market.price_history(self.store, "SPY", monthly=False, critical=True, label="Benchmark (S&P 500 ETF)")
         if stock_m and bench_m:
             b = regression_beta(stock_m[0]["series"], bench_m[0]["series"])
             if b:
@@ -203,7 +204,8 @@ class Pipeline:
         self.state.put("retrieved", out)
         missing = [k for k in ("price", "rf", "erp", "beta") if k not in mi]
         if missing:
-            blocked = self.store.blocked_requests(critical_only=True)
+            blocked = self.store.blocked_requests(critical_only=True) + \
+                [r for r in self.store.requests.values() if r["status"] == "invalid_content"]
             raise Paused(AWAITING_EVIDENCE,
                          f"Critical market inputs unavailable: {', '.join(missing)}. Allow the hosts in the environment's "
                          f"network policy or place the source documents in the evidence inbox, then `eqr resume`.",

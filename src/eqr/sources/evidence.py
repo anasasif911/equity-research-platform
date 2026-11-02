@@ -98,7 +98,11 @@ class EvidenceStore:
         self.limiter = _RateLimiter(policy.get("rate_limits_per_second", {}))
         self.fixtures: list[tuple[str, Path]] = []   # (url regex, file) - offline SYNTHETIC test mode only
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": user_agent(cfg), "Accept-Encoding": "gzip, deflate"})
+        # The SEC contact user-agent (contains an email) is sent ONLY to SEC hosts;
+        # every other host receives a generic identifier.
+        self.sec_user_agent = user_agent(cfg)
+        self.generic_user_agent = cfg["http"].get("generic_user_agent", "eqr-research-platform/0.1")
+        self.session.headers.update({"Accept-Encoding": "gzip, deflate"})
 
     # ------------------------------------------------------------------ registry
     def save(self) -> None:
@@ -185,11 +189,12 @@ class EvidenceStore:
         backoff = self.cfg["http"]["retry"]["backoff_s"]
         max_attempts = self.cfg["http"]["retry"]["max_attempts"]
         last_err = None
-        for attempt in range(max_attempts):
+        for attempt in range(max_attempts + 2):  # two extra attempts reserved for 429 back-off
             self.limiter.wait(host)
             req["attempts"] += 1
             try:
                 headers = {"Accept": accept} if accept else {}
+                headers["User-Agent"] = self.sec_user_agent if host.endswith("sec.gov") else self.generic_user_agent
                 r = self.session.get(url, timeout=self.cfg["http"]["timeout_s"], headers=headers)
                 if r.status_code == 200:
                     data = r.content
@@ -204,14 +209,18 @@ class EvidenceStore:
                 last_err = f"HTTP {r.status_code}"
                 if r.status_code in (403, 404, 401, 451):
                     break  # policy / not found: retrying will not help
-                if r.status_code == 429:
-                    time.sleep(backoff[min(attempt, len(backoff) - 1)] * 2)
+                if r.status_code == 429:  # honour Retry-After; otherwise back off progressively
+                    ra = r.headers.get("Retry-After")
+                    wait = float(ra) if (ra and ra.isdigit()) else 15.0 * (attempt + 1)
+                    time.sleep(min(wait, 90.0))
                     continue
             except requests.exceptions.ProxyError as e:
                 last_err = f"blocked by network policy/proxy: {str(e)[:160]}"
                 break
             except requests.RequestException as e:
                 last_err = f"{type(e).__name__}: {str(e)[:160]}"
+            if attempt >= max_attempts - 1 and not (last_err or "").endswith("429"):
+                break
             if attempt < max_attempts - 1:
                 time.sleep(backoff[min(attempt, len(backoff) - 1)])
         req["status"] = "blocked"
@@ -233,6 +242,16 @@ class EvidenceStore:
         ev = self._register(data, ext=path.suffix, method="fixture", synthetic=True,
                             retrieved_at=utcnow().isoformat(), **kw)
         return data, ev
+
+    def mark_invalid(self, url: str, kind: str, reason: str) -> None:
+        """A 200 response whose content failed validation (e.g. a bot-check page)."""
+        rid = request_id_for(kind, url)
+        if rid in self.requests:
+            self.requests[rid].update(status="invalid_content", last_error=reason)
+        for e in self.items.values():
+            if e.url == url and e.kind == kind:
+                e.notes = f"REJECTED: {reason}"
+        self.save()
 
     def blocked_requests(self, critical_only: bool = False) -> list[dict]:
         return [r for r in self.requests.values() if r["status"] == "blocked" and (r["critical"] or not critical_only)]

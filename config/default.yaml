@@ -9,7 +9,9 @@ http:
   # set EQR_SEC_USER_AGENT="Your Name your.email@example.com"
   user_agent_env: EQR_SEC_USER_AGENT
   default_user_agent: "eqr-research-platform/0.1 (set EQR_SEC_USER_AGENT)"
-  timeout_s: 30
+  generic_user_agent: "eqr-research-platform/0.1"   # sent to all non-SEC hosts (no personal data)
+  timeout_s_note: "home.treasury.gov can take ~20s"
+  timeout_s: 45
   retry: {max_attempts: 4, backoff_s: [2, 4, 8, 16]}
 
 budget:

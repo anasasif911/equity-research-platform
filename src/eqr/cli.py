@@ -116,7 +116,8 @@ def cmd_doctor(a) -> int:
            "sec_user_agent_set": bool(os.environ.get(cfg["http"]["user_agent_env"]))}
     for h in hosts:
         try:
-            r = requests.get(h, timeout=10, headers={"User-Agent": user_agent(cfg)})
+            ua = user_agent(cfg) if "sec.gov" in h else cfg["http"].get("generic_user_agent", "eqr-research-platform/0.1")
+            r = requests.get(h, timeout=45, headers={"User-Agent": ua})
             out["network"][h] = r.status_code
         except Exception as e:  # noqa: BLE001
             out["network"][h] = f"unreachable ({type(e).__name__})"
