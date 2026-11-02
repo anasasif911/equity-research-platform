@@ -1,0 +1,305 @@
+{
+  "label": "FINAL_VALIDATED",
+  "generated_at": "2026-11-02T20:24:33+00:00",
+  "gates": [
+    {
+      "id": "G01",
+      "name": "Security resolved unambiguously",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "PSX: SAZEW via PSX data portal company page [EV-0001]; exchange PSX"
+    },
+    {
+      "id": "G02",
+      "name": "Historical financials traceable to tier-1 sources",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "196/196 historical values carry document-level provenance (issuer annual/quarterly reports filed on PSX (PDF)) [EV-0002]"
+    },
+    {
+      "id": "G03",
+      "name": "Historical coverage >= 5 fiscal years (or all available, disclosed)",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "6 fiscal years of annual history"
+    },
+    {
+      "id": "G04",
+      "name": "Balance-sheet identity holds in every historical year",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "6 pass, 0 fail, 0 not testable (missing totals)"
+    },
+    {
+      "id": "G05",
+      "name": "Cash-flow statement reconciles to change in cash",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "1 pass, 0 fail"
+    },
+    {
+      "id": "G06",
+      "name": "Income-statement subtotals consistent",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "14 pass, 0 fail (differences logged)"
+    },
+    {
+      "id": "G07",
+      "name": "Forecast balance sheet balances / schedules consistent",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "max |net assets - capital| = 0.000000m (engine); workbook checks: PASS"
+    },
+    {
+      "id": "G08",
+      "name": "Enterprise-to-equity bridge and share count reconcile",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "EV + cash - debt - NCI - leases = equity; per-share x shares = equity; share count from cover page 60,445,961 as of 2026-11-02"
+    },
+    {
+      "id": "G09",
+      "name": "Critical market inputs sourced, dated and fresh",
+      "severity": "critical",
+      "status": "QUALIFIED",
+      "detail": "sourced EV-0001, EV-0017, EV-0019; stale: risk-free 2026-09-18, country risk premium 2026-01-05 (301d; source updates semi-annually)"
+    },
+    {
+      "id": "G10",
+      "name": "Valuation sanity (TV share, implied multiples, terminal ROIC, g < rf)",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "TV share 42.1%, g 5.0% < rf 6.1%, terminal EV/EBITDA 2.9x (range 1.5-20x), RONIC 30.2% >= WACC 20.3%"
+    },
+    {
+      "id": "G11",
+      "name": "Sensitivity directions economically consistent",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "value falls with WACC (+269.10), rises with g (+62.19); bear<=base<=bull; margin/growth grid monotonic: True"
+    },
+    {
+      "id": "G12",
+      "name": "Workbook recalculated by an independent engine and matches engine",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "LibreOffice recalculated 1400 formula/input cells; 0 mismatches vs engine"
+    },
+    {
+      "id": "G13",
+      "name": "Workbook free of formula errors",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "0 error cells"
+    },
+    {
+      "id": "G14",
+      "name": "Report numbers match workbook",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "detail": "12/12 key figures found in report/summary text; workbook dashboard matches engine: True"
+    },
+    {
+      "id": "G15",
+      "name": "Source register complete; every material input cited",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "27 sources registered; 14 distinct ids cited in narrative; unknown ids: none"
+    },
+    {
+      "id": "G16",
+      "name": "Stale-data flags reviewed",
+      "severity": "minor",
+      "status": "QUALIFIED",
+      "detail": "stale: risk-free 2026-09-18, country risk premium 2026-01-05 (301d; source updates semi-annually)"
+    },
+    {
+      "id": "G17",
+      "name": "Rendered PDFs and representative sheets visually inspected",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "tables within frame: True; summary pages 2 (<=2: True); 22 page images rendered for review; reviewed by Claude (agent reviewer, this session): Inspected all 13 report pages, both summary pages and workbook renders (Dashboard, Assumptions, IS). Fixed during review: false precision on cover/KPI strip, overlapping chart labels, zero-width comps"
+    },
+    {
+      "id": "G18",
+      "name": "Independent critique completed and findings resolved or disclosed",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "deterministic critique 3 findings; model critique ran: 4 findings; unresolved critical: 0"
+    },
+    {
+      "id": "G19",
+      "name": "Qualitative synthesis performed by an inference model with cited evidence",
+      "severity": "major",
+      "status": "VERIFIED",
+      "detail": "synthesis by provider 'agent_handoff', revised 1x"
+    }
+  ],
+  "workbook_recalculation": {
+    "compared": 1400,
+    "mismatches": [],
+    "errors": [],
+    "checks_overall": "PASS"
+  },
+  "report_checks": {
+    "expected": 12,
+    "found": 12,
+    "missing": [],
+    "workbook_match": true,
+    "summary_pages": 2
+  },
+  "layout_log": [
+    {
+      "table": "kpi_strip",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "security_id",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "thesis",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "hist",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "assumptions",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "forecast",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "methods",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "wacc",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "dcf",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "sensitivity",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "comps",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "scenarios",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "catalysts",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "risks",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "impact",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "capalloc",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "gates",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "sources",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "discrepancies",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "kpi_strip",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    },
+    {
+      "table": "summary_val",
+      "width_pt": 493.2,
+      "frame_pt": 493.2,
+      "fits": true
+    }
+  ],
+  "page_images": [
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-01.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-02.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-03.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-04.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-05.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-06.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-07.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-08.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-09.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-10.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-11.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-12.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-13.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/report-14.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/summary-1.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/summary-2.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/workbook-01.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/workbook-02.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/workbook-03.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/workbook-04.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/workbook-05.png",
+    "/home/user/runs/SAZEW-20261102-201029/validation/png/workbook-06.png"
+  ],
+  "recalculated_workbook": "/home/user/runs/SAZEW-20261102-201029/validation/recalc/SAZEW_financial_model.xlsx"
+}

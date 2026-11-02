@@ -1,0 +1,209 @@
+{
+  "run_id": "SAZEW-20261102-201029",
+  "security": {
+    "name": "Sazgar Engineering Works Limited",
+    "ticker": "SAZEW",
+    "exchange": "PSX",
+    "cik": null,
+    "identifier": "PSX: SAZEW"
+  },
+  "information_cutoff": "2026-11-02T20:10:29+00:00",
+  "generated_at": "2026-11-02T20:24:33+00:00",
+  "label": "FINAL_VALIDATED",
+  "rating": {
+    "rating": "BUY",
+    "why": "expected 12m total return 99.4% vs cost of equity 21.5% (BUY > ke+10pp, SELL < ke-10pp)"
+  },
+  "fair_value": 2288.5530490324063,
+  "range": [
+    1102.3006488344172,
+    3317.874825074419
+  ],
+  "target_12m": 2723.657459576143,
+  "confidence": "MEDIUM",
+  "model_provider": "agent_handoff",
+  "methodology": {
+    "methodology_sha256": "ed6f8799442bd3c0"
+  },
+  "gates": [
+    {
+      "id": "G01",
+      "name": "Security resolved unambiguously",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G02",
+      "name": "Historical financials traceable to tier-1 sources",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G03",
+      "name": "Historical coverage >= 5 fiscal years (or all available, disclosed)",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G04",
+      "name": "Balance-sheet identity holds in every historical year",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G05",
+      "name": "Cash-flow statement reconciles to change in cash",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G06",
+      "name": "Income-statement subtotals consistent",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G07",
+      "name": "Forecast balance sheet balances / schedules consistent",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G08",
+      "name": "Enterprise-to-equity bridge and share count reconcile",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G09",
+      "name": "Critical market inputs sourced, dated and fresh",
+      "severity": "critical",
+      "status": "QUALIFIED"
+    },
+    {
+      "id": "G10",
+      "name": "Valuation sanity (TV share, implied multiples, terminal ROIC, g < rf)",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G11",
+      "name": "Sensitivity directions economically consistent",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G12",
+      "name": "Workbook recalculated by an independent engine and matches engine",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G13",
+      "name": "Workbook free of formula errors",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G14",
+      "name": "Report numbers match workbook",
+      "severity": "critical",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G15",
+      "name": "Source register complete; every material input cited",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G16",
+      "name": "Stale-data flags reviewed",
+      "severity": "minor",
+      "status": "QUALIFIED"
+    },
+    {
+      "id": "G17",
+      "name": "Rendered PDFs and representative sheets visually inspected",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G18",
+      "name": "Independent critique completed and findings resolved or disclosed",
+      "severity": "major",
+      "status": "VERIFIED"
+    },
+    {
+      "id": "G19",
+      "name": "Qualitative synthesis performed by an inference model with cited evidence",
+      "severity": "major",
+      "status": "VERIFIED"
+    }
+  ],
+  "files": [
+    {
+      "key": "report_pdf",
+      "description": "Institutional equity research report (PDF)",
+      "file": "SAZEW_equity_research_report.pdf",
+      "bytes": 358501,
+      "sha256": "59d1603a9af859b67013bd2fd2e86615bf62252d872dbfaaec91e8c3546c0e96"
+    },
+    {
+      "key": "summary_pdf",
+      "description": "Investment summary (PDF, 1-2 pages)",
+      "file": "SAZEW_investment_summary.pdf",
+      "bytes": 66335,
+      "sha256": "d794ee5f8c9595970aee978cbf3e372058081ce8663ebca19e8112f18632382d"
+    },
+    {
+      "key": "summary_md",
+      "description": "Investment summary (Markdown)",
+      "file": "SAZEW_investment_summary.md",
+      "bytes": 4933,
+      "sha256": "6425fda913cd7169526c0ad6ab0b4624c7e715b7a17c06557fd6fc8a9b06c5e9"
+    },
+    {
+      "key": "model_xlsx",
+      "description": "Financial and valuation model (Excel, native formulas)",
+      "file": "SAZEW_financial_model.xlsx",
+      "bytes": 66516,
+      "sha256": "512f4210616f7943e5e34e5327deeefc1df9b7d922aad48201d1cb45492241d0"
+    },
+    {
+      "key": "sources_csv",
+      "description": "Research source register (CSV)",
+      "file": "SAZEW_source_register.csv",
+      "bytes": 9950,
+      "sha256": "0a2179f21356a0c0606bf8e45cf63aca887ece691a6f8784aabf1a54b58a7a33"
+    },
+    {
+      "key": "sources_json",
+      "description": "Research source register (JSON)",
+      "file": "SAZEW_source_register.json",
+      "bytes": 16662,
+      "sha256": "98de53eaded4081715d81b60a72effeea8b2ec9d159000e9902c54716130ac82"
+    },
+    {
+      "key": "supporting_json",
+      "description": "Supporting data: statements, drivers, assumptions, valuation, synthesis, critique (JSON)",
+      "file": "SAZEW_supporting_data.json",
+      "bytes": 116512,
+      "sha256": "dbd19dfd6377306eb63d9217bf563e6adc3d64153e0e667fc08c961a510c2dc4"
+    },
+    {
+      "key": "validation",
+      "description": "Validation report: quality gates, workbook recalculation, report checks (JSON)",
+      "file": "validation_report.json",
+      "bytes": 9451,
+      "sha256": "4096271c2e953d35d6ec66061319239ca08365ba09b3fbd26641d7e9e63beed2"
+    }
+  ],
+  "run_folder_extras": {
+    "evidence_raw": "sources/raw/",
+    "excerpts": "sources/excerpts/",
+    "checkpoints": "work/",
+    "page_images": "validation/png/",
+    "log": "run.log"
+  }
+}

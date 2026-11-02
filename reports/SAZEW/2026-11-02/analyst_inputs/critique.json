@@ -1,0 +1,17 @@
+{
+  "overall": "The draft is evidence-based and the counter-thesis is substantive, but three issues need revision: the counter-thesis omits the clearest early warning in the Q1 balance sheet (shrinking customer advances), the comparables cross-check is applied to peak trailing earnings without saying so, and the headline language implies more precision than a 97%-wide valuation range supports.",
+  "findings": [
+    {"area": "thesis", "severity": "major", "target": "counter_thesis.argument / risks: working-capital reversal",
+     "problem": "The Q1 FY27 balance sheet [EV-0003] shows trade and other payables (largely customer advances, per the annual report commentary) falling to PKR 28,193m from PKR 30,722m in one quarter while stock-in-trade stayed at PKR 41,771m. This is direct evidence that the working-capital reversal risk has started, and it is not mentioned.",
+     "required_revision": "Add the Q1 movement in payables vs inventory to the counter-thesis and the working-capital risk, citing EV-0003, and say whether it changes the evaluation."},
+    {"area": "valuation", "severity": "major", "target": "trading_comps value PKR 2,336 (30% weight)",
+     "problem": "The comparables value applies the peer median trailing P/E (6.1x, tier-4 portal earnings) to SAZEW's trailing net profit of PKR 23,223m, which the draft itself calls near-peak. The cross-check therefore embeds the same optimism the variant perception is arguing against.",
+     "required_revision": "State in the valuation discussion that the P/E cross-check is on peak trailing earnings and that a normalised-earnings multiple would be lower; keep the methodology weight but disclose the limitation."},
+    {"area": "presentation", "severity": "minor", "target": "headline 'about PKR 2,289'",
+     "problem": "The valuation range (PKR 1,102 to PKR 3,318) is about 97% of fair value; a single headline number overstates precision.",
+     "required_revision": "Lead with the range and the probability-weighted value; present PKR 2,289 as the central estimate."},
+    {"area": "thesis", "severity": "minor", "target": "industry_analysis 'implying share loss'",
+     "problem": "Company units are compared with RAMA industry growth (company-cited), which mixes segments; the share-loss inference is reasonable but should remain explicitly labelled as interpretation (it is).",
+     "required_revision": "No change required beyond keeping the label."}
+  ]
+}

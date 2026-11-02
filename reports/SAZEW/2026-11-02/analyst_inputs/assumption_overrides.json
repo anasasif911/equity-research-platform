@@ -1,0 +1,14 @@
+{
+  "growth": {"values": [0.12, 0.15, 0.12, 0.10, 0.09, 0.08, 0.07],
+             "rationale": "Q1 FY27 revenue +23% came from product mix while four-wheeler units fell 11.8% y/y; CBU import duties were cut from July 2026 and the Auto Policy 2026-31 is pending, slowing NEV bookings; three-wheeler units +44.7%. FY27E 12%, FY28E 15% as new capacity (54,000 units p.a. single shift) and models ramp, fading to 7% nominal PKR by FY33E. Historical 3y CAGR (119%) reflects a launch-cycle step change and is not extrapolated",
+             "evidence_ids": ["EV-0010", "EV-0004"]},
+  "ebit_margin": {"first": 0.15, "last": 0.125,
+             "rationale": "Starts near the Q1 FY27 operating margin (14.7%) after the company absorbed the hybrid sales-tax increase (8.5%/12.75% to 18%); fades to 12.5% as new entrants, NEV competition and lower tariff protection (CBU duty cuts) erode pricing. FY25 (23.6%) and FY26 (19.0%) margins are treated as cyclical peaks",
+             "evidence_ids": ["EV-0010", "EV-0005"]},
+  "capex_pct": {"values": [0.055, 0.045, 0.03, 0.025, 0.02, 0.02, 0.02],
+             "rationale": "A new expansion plan with an estimated budget of PKR 22.0bn (paint shop, civil works, ancillary equipment) was approved after completing the PKR 11.5bn four-wheeler expansion; spend assumed over FY27-FY28 (about 5% of revenue), then maintenance capex of about 2% of revenue",
+             "evidence_ids": ["EV-0004"]},
+  "dna_pct": {"values": [0.0045, 0.007, 0.009, 0.011, 0.013, 0.015, 0.017],
+             "rationale": "Depreciation was 0.29% of FY26 revenue on a much smaller asset base; it rises as the completed and approved expansions (about PKR 33bn) are capitalised, converging below maintenance capex (<= 90% of capex) by FY33E",
+             "evidence_ids": ["EV-0004"]}
+}
